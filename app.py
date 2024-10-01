@@ -16,7 +16,7 @@ def determine_winner(player_total, banker_total):
         return "Tie"
 
 # Streamlit app
-st.title("Baccarat Simulator with Betting Decisions")
+st.title("Baccarat Simulator (Mobile-Optimized)")
 
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
@@ -40,17 +40,20 @@ if f'df_game_{game}' not in st.session_state:
 # Available card values (0 to 9)
 card_values = list(range(10))
 
-# Horizontal row of numbers for card selection
+# Horizontal row of numbers for card selection (mobile optimized: 3 numbers per row)
 st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
 
-# Create a row of clickable buttons for the player, but limit to 3 cards
 player_selected = None
 if len(st.session_state[f'player_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Player:")
-    cols = st.columns(len(card_values))
-    for i, col in enumerate(cols):
-        if col.button(f"{card_values[i]}", key=f"player_button_{i}_{game}"):
-            player_selected = card_values[i]
+    
+    # Arrange buttons in a grid (3 numbers per row)
+    for row in range(0, 10, 3):
+        cols = st.columns(3)
+        for i, col in enumerate(cols):
+            if row + i < len(card_values):
+                if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
+                    player_selected = card_values[row + i]
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -65,14 +68,17 @@ st.write(f"Player's Hand: {st.session_state[f'player_cards_{game}']}")
 # Repeat for the banker, but limit to 3 cards
 st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}']})")
 
-# Create a row of clickable buttons for the banker, but limit to 3 cards
 banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Banker:")
-    cols = st.columns(len(card_values))
-    for i, col in enumerate(cols):
-        if col.button(f"{card_values[i]}", key=f"banker_button_{i}_{game}"):
-            banker_selected = card_values[i]
+
+    # Arrange buttons in a grid (3 numbers per row)
+    for row in range(0, 10, 3):
+        cols = st.columns(3)
+        for i, col in enumerate(cols):
+            if row + i < len(card_values):
+                if col.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}", help="Click to add card"):
+                    banker_selected = card_values[row + i]
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
@@ -172,6 +178,7 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
 
             df_game.at[i, 'decision'] = decision
 
+        # Store the updated game DataFrame
         st.session_state[f'df_game_{game}'] = df_game
 
         # Move to the next round and reset cards
@@ -185,12 +192,13 @@ st.write(f"Player: {st.session_state[f'cumulative_wins_{game}']['Player']}")
 st.write(f"Banker: {st.session_state[f'cumulative_wins_{game}']['Banker']}")
 st.write(f"Tie: {st.session_state[f'cumulative_wins_{game}']['Tie']}")
 
-# Display current betting decisions
+# Display current betting decisions, with most recent one at the top (stacked layout)
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions for {game}")
-        st.write(df_game[['round_num', 'decision']])
+        # Reverse the DataFrame to show most recent decision first
+        st.write(df_game[['round_num', 'decision']].iloc[::-1])
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
@@ -200,3 +208,4 @@ if st.button("Reset Game"):
     st.session_state[f'banker_cards_{game}'] = []
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'player_cards', 'banker_cards', 'result', 'player_total', 'banker_total'])
     st.write(f"Game {game} reset successfully!")
+
