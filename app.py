@@ -96,6 +96,8 @@ def update_result(winner):
         df_game['proportion_4'] = 0
         df_game['next_rd_decision'] = 'No Bet'
         df_game['profit'] = 0
+    profit = st.session_state.get(f'profit_{game}', 0)  # Initialize profit if not present
+
 
     total_bets = 0
     banker_bets = 0
