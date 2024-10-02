@@ -22,7 +22,7 @@ st.markdown(
     .stButton button {
         height: 40px;
         width: 50px;
-        margin: 2px;
+        margin: 0px;
         padding: 0px;
         font-size: 16px;
     }
@@ -32,7 +32,7 @@ st.markdown(
         padding-bottom: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        max-width: 100%;
+        max-width: 50%;
     }
     </style>
     """, 
