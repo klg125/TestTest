@@ -29,10 +29,10 @@ st.markdown(
 # Streamlit app
 st.title("Baccarat Simulator")
 
-# Add a game selector (G1, G2, G3, G4)
-game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
+# Add a game selector (G1, G2, G3, G4, G5, G6)
+game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
 
-# Initialize session state for cumulative wins, round number, and proportions
+# Initialize session state for cumulative wins, round number, proportions, and profits
 if f'cumulative_wins_{game}' not in st.session_state:
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
 
@@ -43,9 +43,12 @@ if f'proportions_{game}' not in st.session_state:
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
 
 if f'df_game_{game}' not in st.session_state:
-    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result'])
+    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'decision', 'profit'])
 
-# Function to update results, calculate proportions, and betting decision
+if f'profit_{game}' not in st.session_state:
+    st.session_state[f'profit_{game}'] = 0
+
+# Function to update results, calculate proportions, betting decision, and profit
 def update_result(winner):
     round_num = st.session_state[f'round_num_{game}']
 
@@ -68,6 +71,7 @@ def update_result(winner):
     stopping_threshold = 0.24
     min_below = 0.02
     last_non_tie = None
+    profit = st.session_state[f'profit_{game}']
 
     # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
@@ -77,6 +81,7 @@ def update_result(winner):
         df_game['proportion_3'] = 0
         df_game['proportion_4'] = 0
         df_game['decision'] = 'No Bet'
+        df_game['profit'] = 0
 
     for i, row in df_game.iterrows():
         if row['result'] != 'Tie':
@@ -118,6 +123,23 @@ def update_result(winner):
 
         df_game.at[i, 'decision'] = decision
 
+        # Profit calculation based on decision and result
+        result = row['result']
+        if decision == 'Banker':
+            if result == 'Banker':
+                profit += 0.95  # Banker win with commission
+            elif result == 'Player':
+                profit -= 1  # Loss on Banker bet
+        elif decision == 'Player':
+            if result == 'Player':
+                profit += 1  # Win on Player bet
+            elif result == 'Banker':
+                profit -= 1  # Loss on Player bet
+
+        df_game.at[i, 'profit'] = profit
+
+    # Update the session state with accumulated profit
+    st.session_state[f'profit_{game}'] = profit
     st.session_state[f'df_game_{game}'] = df_game
 
     # Store the updated proportions
@@ -162,13 +184,14 @@ st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} |
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
-        st.subheader(f"Betting Decisions for {game}")
-        st.write(df_game[['round_num', 'decision']].iloc[::-1].reset_index(drop=True))
+        st.subheader(f"Betting Decisions and Profits for {game}")
+        st.write(df_game[['round_num', 'result', 'decision', 'profit']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
-    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result'])
+    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'decision', 'profit'])
+    st.session_state[f'profit_{game}'] = 0
     st.write(f"**Game {game} reset successfully!**")
