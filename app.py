@@ -252,10 +252,13 @@ if f'df_game_{game}' in st.session_state:
         st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
+# Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
+    # Reset cumulative wins, round number, proportions, and game dataframe
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
     st.session_state[f'profit_{game}'] = 0
     st.write(f"**Game {game} reset successfully!**")
+
