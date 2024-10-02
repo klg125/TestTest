@@ -76,7 +76,7 @@ if len(st.session_state[f'banker_cards_{game}']) < 3:
         for i, col in enumerate(cols):
             if row + i < len(card_values):
                 if col.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}", help="Click to add card"):
-                    player_selected = card_values[row + i] if len(st.session_state[f'player_cards_{game}']) < 3 else None
+                    banker_selected = card_values[row + i] if len(st.session_state[f'banker_cards_{game}']) < 3 else None
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
