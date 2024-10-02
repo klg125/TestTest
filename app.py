@@ -7,10 +7,10 @@ st.markdown(
     <style>
     .stButton button {
         height: 40px;
-        width: 60px;
+        width: 30px;
         margin: 0px;
         padding: 0px;
-        font-size: 20px;
+        font-size: 15px;
     }
     </style>
     """, 
