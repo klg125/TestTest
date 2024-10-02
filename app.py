@@ -154,17 +154,11 @@ def update_result(winner):
     st.session_state[f'proportions_{game}'] = {
         "proportion_1": df_game['proportion_1'].iloc[-1],
         "proportion_2": df_game['proportion_2'].iloc[-1],
-        "proportion_3": df_game['proportion_3'].iloc[-1],
+        "proportion_3': df_game['proportion_3'].iloc[-1],
         "proportion_4": df_game['proportion_4'].iloc[-1]
     }
 
-    # Move to the next round
-    st.session_state[f'round_num_{game}'] += 1
-
-# Fix for showing round 1 only once and updating properly
-if st.session_state[f'round_num_{game}'] == 1 and len(st.session_state[f'df_game_{game}']) == 0:
-    st.session_state[f'round_num_{game}'] = 1
-else:
+    # Immediately move to the next round
     st.session_state[f'round_num_{game}'] = len(st.session_state[f'df_game_{game}']) + 1
 
 # Add a button to undo the last round
@@ -189,8 +183,8 @@ def undo_last_round():
             else:
                 st.session_state[f'profit_{game}'] = 0  # Reset profit if it's the first round
 
-        # Move back to the previous round
-        st.session_state[f'round_num_{game}'] -= 1
+        # Correctly decrement the round number
+        st.session_state[f'round_num_{game}'] = len(st.session_state[f'df_game_{game}']) + 1
 
 # Buttons for each round (Banker, Player, Tie) - translated to Chinese
 st.subheader(f"游戏 {game}: 谁赢得了第 {st.session_state[f'round_num_{game}']} 轮?")
@@ -238,4 +232,3 @@ if st.button("重置游戏"):
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
     st.session_state[f'profit_{game}'] = 0
     st.write(f"**游戏 {game} 成功重置！**")
-
