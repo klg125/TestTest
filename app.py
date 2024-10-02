@@ -1,25 +1,6 @@
 import streamlit as st
 import pandas as pd
 
-# Inject custom CSS to remove spacing between buttons
-st.markdown(
-    """
-    <style>
-    .main .block-container {
-        max-width: 50%;
-        margin: 0px;
-    }
-    .stButton button {
-        height: 40px;
-        width: 30px;
-        margin: 0px;
-        padding: 0px;
-        font-size: 20px;
-    }
-    </style>
-    """, 
-    unsafe_allow_html=True
-)
 # Function to calculate the value of a hand
 def calculate_hand(cards):
     total = sum([min(card, 10) for card in cards]) % 10
@@ -33,6 +14,20 @@ def determine_winner(player_total, banker_total):
         return "Banker"
     else:
         return "Tie"
+
+# Inject custom CSS to control button size
+st.markdown(
+    """
+    <style>
+    .stButton button {
+        height: 35px;
+        width: 50px;
+        font-size: 18px;
+    }
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
 
 # Streamlit app
 st.title("Baccarat Simulator (Mobile-Optimized)")
@@ -59,20 +54,21 @@ if f'df_game_{game}' not in st.session_state:
 # Available card values (0 to 9)
 card_values = list(range(10))
 
-# Horizontal row of numbers for card selection (mobile optimized: 5 numbers per row, narrower)
+# Horizontal row of numbers for card selection (mobile optimized: 5 numbers per row)
 st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
 
 player_selected = None
 if len(st.session_state[f'player_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Player:")
-    
-    # Arrange buttons in a grid (5 numbers per row, two rows)
+
+    # Use narrow columns to reduce the width and fit on the page
     for row in range(0, 10, 5):
-        cols = st.columns(5)
+        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns for each button
         for i, col in enumerate(cols):
             if row + i < len(card_values):
                 with col:
-                    st.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}")
+                    if st.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}"):
+                        player_selected = card_values[row + i]
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -91,13 +87,14 @@ banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Banker:")
 
-    # Arrange buttons in a grid (5 numbers per row, two rows)
+    # Use narrow columns to reduce the width and fit on the page
     for row in range(0, 10, 5):
-        cols = st.columns(5)
+        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns for each button
         for i, col in enumerate(cols):
             if row + i < len(card_values):
                 with col:
-                    st.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}")
+                    if st.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}"):
+                        banker_selected = card_values[row + i]
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
