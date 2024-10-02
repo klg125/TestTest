@@ -26,11 +26,11 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Streamlit app
-st.title("Baccarat Simulator")
+# Streamlit app title in Chinese
+st.title("百家乐模拟器")
 
-# Add a game selector (G1, G2, G3, G4, G5, G6)
-game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
+# Add a game selector (G1, G2, G3, G4, G5, G6) - translated to Chinese
+game = st.selectbox("选择游戏", ["G1", "G2", "G3", "G4", "G5", "G6"])
 
 # Initialize session state for cumulative wins, round number, proportions, decisions, and profits
 if f'cumulative_wins_{game}' not in st.session_state:
@@ -133,9 +133,9 @@ def update_result(winner):
 
         # Determine next round's decision based on current proportions
         next_rd_decision = 'No Bet'
-        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 4:
+        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 20:
             next_rd_decision = 'Banker'
-        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below and row['round_num'] > 4:
+        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below:
             next_rd_decision = 'Player'
 
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
@@ -161,45 +161,81 @@ def update_result(winner):
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
 
-# Buttons for each round (Banker, Player, Tie)
-st.subheader(f"Game {game}: Who Won Round {st.session_state[f'round_num_{game}']}?")
+# Fix for showing round 1 only once and updating properly
+if st.session_state[f'round_num_{game}'] == 1 and len(st.session_state[f'df_game_{game}']) == 0:
+    st.session_state[f'round_num_{game}'] = 1
+else:
+    st.session_state[f'round_num_{game}'] = len(st.session_state[f'df_game_{game}']) + 1
+
+# Add a button to undo the last round
+def undo_last_round():
+    if len(st.session_state[f'df_game_{game}']) > 0:
+        # Remove the last round
+        st.session_state[f'df_game_{game}'] = st.session_state[f'df_game_{game}'].iloc[:-1]
+
+        # Adjust cumulative wins and profit based on the removed round
+        last_round = st.session_state[f'df_game_{game}'].iloc[-1] if len(st.session_state[f'df_game_{game}']) > 0 else None
+
+        # Decrement cumulative wins if necessary
+        if last_round is not None:
+            st.session_state[f'cumulative_wins_{game}'][last_round['result']] -= 1
+
+            # Recalculate the profit based on the last round's decision
+            if len(st.session_state[f'df_game_{game}']) > 1:
+                previous_round = st.session_state[f'df_game_{game}'].iloc[-2]
+                st.session_state[f'profit_{game}'] = calculate_profit(
+                    last_round['result'], previous_round['next_rd_decision'], st.session_state[f'profit_{game}']
+                )
+            else:
+                st.session_state[f'profit_{game}'] = 0  # Reset profit if it's the first round
+
+        # Move back to the previous round
+        st.session_state[f'round_num_{game}'] -= 1
+
+# Buttons for each round (Banker, Player, Tie) - translated to Chinese
+st.subheader(f"游戏 {game}: 谁赢得了第 {st.session_state[f'round_num_{game}']} 轮?")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("Banker"):
+    if st.button("庄家"):
         update_result("Banker")
 
 with col2:
-    if st.button("Player"):
+    if st.button("闲家"):
         update_result("Player")
 
 with col3:
-    if st.button("Tie"):
+    if st.button("平局"):
         update_result("Tie")
 
-# Display cumulative wins and proportions in one line
-proportions = st.session_state[f'proportions_{game}']
-st.subheader(f"Cumulative Wins and Proportions for {game}")
-st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
-         f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
-         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
-         f"**P1:** {proportions['proportion_1']:.2f} | "
-         f"**P2:** {proportions['proportion_2']:.2f} | "
-         f"**P3:** {proportions['proportion_3']:.2f} | "
-         f"**P4:** {proportions['proportion_4']:.2f}")
+# Button to undo the last round (translated to Chinese)
+if st.button("撤销上一轮"):
+    undo_last_round()
 
-# Display current betting decisions, with most recent one at the top (stacked layout)
+# Display cumulative wins and proportions in one line - translated to Chinese
+proportions = st.session_state[f'proportions_{game}']
+st.subheader(f"累计胜利和比例 - 游戏 {game}")
+st.write(f"**闲家:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
+         f"**庄家:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
+         f"**平局:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
+         f"**比例1:** {proportions['proportion_1']:.2f} | "
+         f"**比例2:** {proportions['proportion_2']:.2f} | "
+         f"**比例3:** {proportions['proportion_3']:.2f} | "
+         f"**比例4:** {proportions['proportion_4']:.2f}")
+
+# Display current betting decisions and profits, with most recent one at the top - translated to Chinese
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
-        st.subheader(f"Betting Decisions and Profits for {game}")
+        st.subheader(f"投注决策和利润 - 游戏 {game}")
         st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
 
-# Button to reset the game (back to round 1 for the selected game)
-if st.button("Reset Game"):
+# Button to reset the game (back to round 1) - translated to Chinese
+if st.button("重置游戏"):
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
     st.session_state[f'profit_{game}'] = 0
-    st.write(f"**Game {game} reset successfully!**")
+    st.write(f"**游戏 {game} 成功重置！**")
+
