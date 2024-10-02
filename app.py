@@ -1,6 +1,31 @@
 import streamlit as st
 import pandas as pd
 
+# Inject custom CSS to adjust button sizes and reduce spacing to be more compact
+st.markdown(
+    """
+    <style>
+    /* Reduce padding and margins of buttons */
+    .stButton button {
+        height: 40px;
+        width: 50px;
+        margin: 1px;
+        padding: 0px;
+        font-size: 14px;
+    }
+    /* Center the main container */
+    .main .block-container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        max-width: 100%;
+    }
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
+
 # Function to calculate the value of a hand
 def calculate_hand(cards):
     total = sum([min(card, 10) for card in cards]) % 10
@@ -15,32 +40,8 @@ def determine_winner(player_total, banker_total):
     else:
         return "Tie"
 
-st.markdown(
-    """
-    <style>
-    /* Reduce padding and margins of buttons */
-    .stButton button {
-        height: 40px;
-        width: 30px;
-        margin: 0px;
-        padding: 0px;
-        font-size: 16px;
-    }
-    /* Center the main container */
-    .main .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        max-width: 100%;
-    }
-    </style>
-    """, 
-    unsafe_allow_html=True
-)
-
 # Streamlit app
-st.title("Baccarat Simulator (Mobile-Optimized)")
+st.title("Baccarat Simulator")
 
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
@@ -64,60 +65,45 @@ if f'df_game_{game}' not in st.session_state:
 # Available card values (0 to 9)
 card_values = list(range(10))
 
-# Horizontal row of numbers for card selection (mobile optimized: 5 numbers per row)
-st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
-
+# Function to create number buttons in one row of ten (compact layout)
 def create_number_buttons(prefix, game):
     selected = None
-    cols = st.columns(10)  # Create a row with 5 columns
+    cols = st.columns(10)  # Create a row with 10 columns
     for i, col in enumerate(cols):
         with col:
             if st.button(f"{card_values[i]}", key=f"{prefix}_button_{i}_{game}"):
                 selected = card_values[i]
-    
-    # Create the second row of buttons
-    cols = st.columns(10)
-    for i, col in enumerate(cols):
-        with col:
-            if st.button(f"{card_values[i+10]}", key=f"{prefix}_button_{i+10}_{game}"):
-                selected = card_values[i+10]
-
     return selected
-    
-player_selected = None
+
+# Player's card selection with minimal vertical spacing
+st.subheader(f"Game {game}: Player's and Banker's Cards")
 if len(st.session_state[f'player_cards_{game}']) < 3:
-    st.write("Click on a number to add a card for Player:")
+    st.write("Click on a number to add a card for Player or Banker:")
     player_selected = create_number_buttons("player", game)
     if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
         st.session_state[f'player_cards_{game}'].append(player_selected)
 
-
-# Allow the user to undo the last card selection for the player
-if len(st.session_state[f'player_cards_{game}']) > 0 and st.button("Undo Player's Last Card"):
-    st.session_state[f'player_cards_{game}'].pop()
+# Undo button for Player
+if len(st.session_state[f'player_cards_{game}']) > 0:
+    if st.button("Undo Player's Last Card"):
+        st.session_state[f'player_cards_{game}'].pop()
 
 # Display player's selected cards
-st.write(f"Player's Hand: {st.session_state[f'player_cards_{game}']}")
+st.write(f"**Player's Hand:** {st.session_state[f'player_cards_{game}']}")
 
-# Repeat for the banker, but limit to 3 cards
-st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}']})")
-
-banker_selected = None
+# Banker's card selection
 if len(st.session_state[f'banker_cards_{game}']) < 3:
-    st.write("Click on a number to add a card for Banker:")
     banker_selected = create_number_buttons("banker", game)
     if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
         st.session_state[f'banker_cards_{game}'].append(banker_selected)
 
-if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
-    st.session_state[f'banker_cards_{game}'].append(banker_selected)
-
-# Allow the user to undo the last card selection for the banker
-if len(st.session_state[f'banker_cards_{game}']) > 0 and st.button("Undo Banker's Last Card"):
-    st.session_state[f'banker_cards_{game}'].pop()
+# Undo button for Banker
+if len(st.session_state[f'banker_cards_{game}']) > 0:
+    if st.button("Undo Banker's Last Card"):
+        st.session_state[f'banker_cards_{game}'].pop()
 
 # Display banker's selected cards
-st.write(f"Banker's Hand: {st.session_state[f'banker_cards_{game}']}")
+st.write(f"**Banker's Hand:** {st.session_state[f'banker_cards_{game}']}")
 
 # Enforce that both player and banker must have at least 2 cards before calculating the result
 if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f'banker_cards_{game}']) >= 2:
@@ -125,13 +111,13 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
     banker_total = calculate_hand(st.session_state[f'banker_cards_{game}'])
 
     # Display totals
-    st.write(f"Player's Total: {player_total}")
-    st.write(f"Banker's Total: {banker_total}")
+    st.write(f"**Player's Total:** {player_total}")
+    st.write(f"**Banker's Total:** {banker_total}")
 
     # Determine winner when the user clicks "Confirm"
     if st.button("Confirm"):
         winner = determine_winner(player_total, banker_total)
-        st.write(f"Round {st.session_state[f'round_num_{game}']}: {winner} wins!")
+        st.write(f"**Round {st.session_state[f'round_num_{game}']}: {winner} wins!**")
 
         # Create a new row as a DataFrame
         new_row = pd.DataFrame({
@@ -149,20 +135,26 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
         # Update cumulative wins for the selected game
         st.session_state[f'cumulative_wins_{game}'][winner] += 1
 
-        # Calculate proportions and betting decisions for all rounds
+        # Proportions and betting decision logic
         df_game = st.session_state[f'df_game_{game}']
+        total_rounds = len(df_game)
         count_1 = count_2 = count_3 = count_4 = 0
-        total_rounds = 0
-        last_non_tie = None
         prop_3_threshold_high = 0.32
         prop_4_threshold_high = 0.32
         stopping_threshold = 0.24
         min_below = 0.02
-        
+        last_non_tie = None
+
+        # Initialize new columns if not present
+        if 'new_column' not in df_game.columns:
+            df_game['new_column'] = 0
+            df_game['proportion_1'] = 0
+            df_game['proportion_2'] = 0
+            df_game['proportion_3'] = 0
+            df_game['proportion_4'] = 0
+            df_game['decision'] = 'No Bet'
+
         for i, row in df_game.iterrows():
-            total_rounds += 1
-            
-            df_game.at[i, 'new_column'] = None
             if row['result'] != 'Tie':
                 if last_non_tie is not None:
                     if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
@@ -173,12 +165,8 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
                         df_game.at[i, 'new_column'] = 4
                     elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
                         df_game.at[i, 'new_column'] = 3
-
                 last_non_tie = i
 
-            if df_game.at[i, 'new_column'] is None:
-                df_game.at[i, 'new_column'] = 0  # For ties, use 0 in new_column
-            
             if df_game.at[i, 'new_column'] == 1:
                 count_1 += 1
             elif df_game.at[i, 'new_column'] == 2:
@@ -199,15 +187,13 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
             prop_4 = df_game.at[i, 'proportion_4']
 
             decision = 'No Bet'
-
-            if (prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 20):
+            if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 20:
                 decision = 'Banker'
-            elif (prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below):
+            elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below:
                 decision = 'Player'
 
             df_game.at[i, 'decision'] = decision
 
-        # Store the updated game DataFrame
         st.session_state[f'df_game_{game}'] = df_game
 
         # Move to the next round and reset cards
@@ -217,17 +203,16 @@ if len(st.session_state[f'player_cards_{game}']) >= 2 and len(st.session_state[f
 
 # Display cumulative wins for the current game
 st.subheader(f"Cumulative Wins for {game}")
-st.write(f"Player: {st.session_state[f'cumulative_wins_{game}']['Player']}")
-st.write(f"Banker: {st.session_state[f'cumulative_wins_{game}']['Banker']}")
-st.write(f"Tie: {st.session_state[f'cumulative_wins_{game}']['Tie']}")
+st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']}")
+st.write(f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']}")
+st.write(f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']}")
 
 # Display current betting decisions, with most recent one at the top (stacked layout)
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions for {game}")
-        # Reverse the DataFrame to show most recent decision first
-        st.write(df_game[['round_num', 'decision']].iloc[::-1])
+        st.write(df_game[['round_num', 'decision']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
@@ -236,4 +221,4 @@ if st.button("Reset Game"):
     st.session_state[f'player_cards_{game}'] = []
     st.session_state[f'banker_cards_{game}'] = []
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'player_cards', 'banker_cards', 'result', 'player_total', 'banker_total'])
-    st.write(f"Game {game} reset successfully!")
+    st.write(f"**Game {game} reset successfully!**")
