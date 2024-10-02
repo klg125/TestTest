@@ -148,13 +148,13 @@ def update_result(winner):
                 next_rd_decision = 'Player'
             # If Banker wins, bet on Player next round
             elif row['result'] == 'Banker':
-                next_rd_decision = 'Player'
+                next_rd_decision = 'Banker'
             # Tie handling: look at the last non-tie round
             elif row['result'] == 'Tie' and last_non_tie is not None:
                 if df_game.at[last_non_tie, 'result'] == 'Player':
                     next_rd_decision = 'Player'
                 elif df_game.at[last_non_tie, 'result'] == 'Banker':
-                    next_rd_decision = 'Player'
+                    next_rd_decision = 'Banker'
 
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
 
