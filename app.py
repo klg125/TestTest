@@ -196,10 +196,13 @@ def update_result(winner):
         df_game.at[i, 'decision'] = decision
 
     # Now calculate the profit for this round based on the previous round's next_rd_decision
-    if total_rounds > 1:  # If we're beyond the first round
-        previous_round = df_game.iloc[-2]  # Use previous round's decision
-        profit = calculate_profit(winner, previous_round['next_rd_decision'], st.session_state[f'profit_{game}'])
-        df_game.at[total_rounds-1, 'profit'] = profit
+    if total_rounds > 1:  # Ensure at least two rounds
+        if len(df_game) > 1:
+            previous_round = df_game.iloc[-2]  # Safely access the second-to-last row
+            profit = calculate_profit(winner, previous_round['next_rd_decision'], st.session_state[f'profit_{game}'])
+            df_game.at[total_rounds-1, 'profit'] = profit
+        else:
+            df_game.at[total_rounds-1, 'profit'] = 0  # No profit for the first round
 
     # Update the session state with accumulated profit
     st.session_state[f'profit_{game}'] = profit
@@ -215,6 +218,7 @@ def update_result(winner):
 
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
+
 
 
 # Buttons for each round (Banker, Player, Tie)
