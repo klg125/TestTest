@@ -48,6 +48,19 @@ if f'df_game_{game}' not in st.session_state:
 if f'profit_{game}' not in st.session_state:
     st.session_state[f'profit_{game}'] = 0
 
+# Function to calculate profit based on the previous round's decision and the current result
+def calculate_profit(result, decision, current_profit):
+    if decision == 'Banker':
+        if result == 'Banker':
+            current_profit += 0.95  # Banker win with commission
+        elif result == 'Player':
+            current_profit -= 1  # Loss on Banker bet
+    elif decision == 'Player':
+        if result == 'Player':
+            current_profit += 1  # Win on Player bet
+        elif result == 'Banker':
+            current_profit -= 1  # Loss on Player bet
+    return current_profit
 
 # Function to update results, calculate next round's decision, and profit
 def update_result(winner):
@@ -71,7 +84,7 @@ def update_result(winner):
     prop_4_threshold_high = 0.32
     min_below = 0.02
     last_non_tie = None
-  
+    profit = st.session_state[f'profit_{game}']
 
     # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
@@ -83,52 +96,34 @@ def update_result(winner):
         df_game['next_rd_decision'] = 'No Bet'
         df_game['profit'] = 0
 
-        # Loop through each round of the game
+    # Track counts for new column
     for i, row in df_game.iterrows():
-        # Increment total_rounds only if the result is not a tie
         if row['result'] != 'Tie':
-            total_rounds += 1
-
-            # Initialize new_column based on the game logic
-            df_game.at[i, 'new_column'] = None  # Ensure it's initialized
             if last_non_tie is not None:
-                # Current round Player and last non-tie round Banker
                 if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 1
-                # Current round Banker and last non-tie round Player
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Player':
                     df_game.at[i, 'new_column'] = 2
-                # Current round Player and last non-tie round Player
                 elif row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Player':
                     df_game.at[i, 'new_column'] = 4
-                # Current round Banker and last non-tie round Banker
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 3
-
-            # Update last_non_tie round index
             last_non_tie = i
 
-        # If Tie, last_non_tie doesn't update
-        if df_game.at[i, 'new_column'] is None:
-            df_game.at[i, 'new_column'] = 0  # For ties, use 0 in new_column
-
-        # Update counts based on new_column
-        if df_game.at[i, 'new_column'] == 1:  # Player win after Banker
+        if df_game.at[i, 'new_column'] == 1:
             count_1 += 1
-        elif df_game.at[i, 'new_column'] == 2:  # Banker win after Player
+        elif df_game.at[i, 'new_column'] == 2:
             count_2 += 1
-        elif df_game.at[i, 'new_column'] == 3:  # Banker win after Banker
+        elif df_game.at[i, 'new_column'] == 3:
             count_3 += 1
-        elif df_game.at[i, 'new_column'] == 4:  # Player win after Player
+        elif df_game.at[i, 'new_column'] == 4:
             count_4 += 1
 
-        # Only calculate proportions if total_rounds > 0
-        if total_rounds > 0:
-            # Calculate proportions
-            df_game.at[i, 'proportion_1'] = float(count_1) / total_rounds
-            df_game.at[i, 'proportion_2'] = float(count_2) / total_rounds
-            df_game.at[i, 'proportion_3'] = float(count_3) / total_rounds
-            df_game.at[i, 'proportion_4'] = float(count_4) / total_rounds
+        # Update proportions
+        df_game.at[i, 'proportion_1'] = count_1 / total_rounds
+        df_game.at[i, 'proportion_2'] = count_2 / total_rounds
+        df_game.at[i, 'proportion_3'] = count_3 / total_rounds
+        df_game.at[i, 'proportion_4'] = count_4 / total_rounds
 
         prop_1 = df_game.at[i, 'proportion_1']
         prop_2 = df_game.at[i, 'proportion_2']
@@ -149,16 +144,24 @@ def update_result(winner):
                 next_rd_decision = 'Player'
             # If Banker wins, bet on Player next round
             elif row['result'] == 'Banker':
-                next_rd_decision = 'Banker'
+                next_rd_decision = 'Player'
             # Tie handling: look at the last non-tie round
             elif row['result'] == 'Tie' and last_non_tie is not None:
                 if df_game.at[last_non_tie, 'result'] == 'Player':
                     next_rd_decision = 'Player'
                 elif df_game.at[last_non_tie, 'result'] == 'Banker':
-                    next_rd_decision = 'Banker'
+                    next_rd_decision = 'Player'
 
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
 
+    # Now calculate the profit for this round based on the previous round's next_rd_decision
+    if total_rounds > 1:  # If we're beyond the first round
+        previous_round = df_game.iloc[-2]  # Use previous round's decision
+        profit = calculate_profit(winner, previous_round['next_rd_decision'], profit)
+        df_game.at[total_rounds-1, 'profit'] = profit
+
+    # Update the session state with accumulated profit
+    st.session_state[f'profit_{game}'] = profit
     st.session_state[f'df_game_{game}'] = df_game
 
     # Store the updated proportions
@@ -204,7 +207,7 @@ if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision']].iloc[::-1].reset_index(drop=True))
+        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
@@ -212,4 +215,5 @@ if st.button("Reset Game"):
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
+    st.session_state[f'profit_{game}'] = 0
     st.write(f"**Game {game} reset successfully!**")
