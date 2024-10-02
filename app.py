@@ -123,11 +123,11 @@ def update_result(winner):
                 count_4 += 1
     
         # Calculate proportions based on non-tie rounds
-        if non_tie_rounds > 0:
-            df_game.at[i, 'proportion_1'] = count_1 / non_tie_rounds
-            df_game.at[i, 'proportion_2'] = count_2 / non_tie_rounds
-            df_game.at[i, 'proportion_3'] = count_3 / non_tie_rounds
-            df_game.at[i, 'proportion_4'] = count_4 / non_tie_rounds
+        if non_tie_rounds > 1:
+            df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
     
         prop_1 = df_game.at[i, 'proportion_1']
         prop_2 = df_game.at[i, 'proportion_2']
