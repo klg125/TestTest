@@ -116,9 +116,9 @@ def update_result(winner):
         prop_4 = df_game.at[i, 'proportion_4']
 
         decision = 'No Bet'
-        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 20:
+        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 15:
             decision = 'Banker'
-        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below:
+        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below and row['round_num'] > 15:
             decision = 'Player'
 
         df_game.at[i, 'decision'] = decision
