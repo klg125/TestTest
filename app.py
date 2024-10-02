@@ -41,7 +41,7 @@ def determine_winner(player_total, banker_total):
         return "Tie"
 
 # Streamlit app
-st.title("Baccarat Simulator")
+
 
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
@@ -76,9 +76,7 @@ def create_number_buttons(prefix, game):
     return selected
 
 # Player's card selection with minimal vertical spacing
-st.subheader(f"Game {game}: Player's and Banker's Cards")
 if len(st.session_state[f'player_cards_{game}']) < 3:
-    st.write("Click on a number to add a card for Player or Banker:")
     player_selected = create_number_buttons("player", game)
     if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
         st.session_state[f'player_cards_{game}'].append(player_selected)
