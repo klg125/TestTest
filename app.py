@@ -69,18 +69,18 @@ st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'roun
 
 def create_number_buttons(prefix, game):
     selected = None
-    cols = st.columns(5)  # Create a row with 5 columns
+    cols = st.columns(10)  # Create a row with 5 columns
     for i, col in enumerate(cols):
         with col:
             if st.button(f"{card_values[i]}", key=f"{prefix}_button_{i}_{game}"):
                 selected = card_values[i]
     
     # Create the second row of buttons
-    cols = st.columns(5)
+    cols = st.columns(10)
     for i, col in enumerate(cols):
         with col:
-            if st.button(f"{card_values[i+5]}", key=f"{prefix}_button_{i+5}_{game}"):
-                selected = card_values[i+5]
+            if st.button(f"{card_values[i+10]}", key=f"{prefix}_button_{i+10}_{game}"):
+                selected = card_values[i+10]
 
     return selected
     
