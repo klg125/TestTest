@@ -50,8 +50,9 @@ if len(st.session_state[f'player_cards_{game}']) < 3:
         cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns to fit better
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
-                    player_selected = card_values[row + i]
+                with col: 
+                    if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
+                        player_selected = card_values[row + i]
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -73,8 +74,9 @@ if len(st.session_state[f'banker_cards_{game}']) < 3:
         cols = st.columns([1, 1, 1, 1, 1])  # Narrower columns to fit better
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                if col.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}", help="Click to add card"):
-                    banker_selected = card_values[row + i]
+                with col: 
+                    if col.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}", help="Click to add card"):
+                        banker_selected = card_values[row + i]
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
