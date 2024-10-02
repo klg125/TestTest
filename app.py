@@ -96,34 +96,52 @@ def update_result(winner):
         df_game['next_rd_decision'] = 'No Bet'
         df_game['profit'] = 0
 
-    # Track counts for new column
+        # Loop through each round of the game
     for i, row in df_game.iterrows():
+        # Increment total_rounds only if the result is not a tie
         if row['result'] != 'Tie':
+            total_rounds += 1
+
+            # Initialize new_column based on the game logic
+            df_game.at[i, 'new_column'] = None  # Ensure it's initialized
             if last_non_tie is not None:
+                # Current round Player and last non-tie round Banker
                 if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 1
+                # Current round Banker and last non-tie round Player
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Player':
                     df_game.at[i, 'new_column'] = 2
+                # Current round Player and last non-tie round Player
                 elif row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Player':
                     df_game.at[i, 'new_column'] = 4
+                # Current round Banker and last non-tie round Banker
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 3
+
+            # Update last_non_tie round index
             last_non_tie = i
 
-        if df_game.at[i, 'new_column'] == 1:
+        # If Tie, last_non_tie doesn't update
+        if df_game.at[i, 'new_column'] is None:
+            df_game.at[i, 'new_column'] = 0  # For ties, use 0 in new_column
+
+        # Update counts based on new_column
+        if df_game.at[i, 'new_column'] == 1:  # Player win after Banker
             count_1 += 1
-        elif df_game.at[i, 'new_column'] == 2:
+        elif df_game.at[i, 'new_column'] == 2:  # Banker win after Player
             count_2 += 1
-        elif df_game.at[i, 'new_column'] == 3:
+        elif df_game.at[i, 'new_column'] == 3:  # Banker win after Banker
             count_3 += 1
-        elif df_game.at[i, 'new_column'] == 4:
+        elif df_game.at[i, 'new_column'] == 4:  # Player win after Player
             count_4 += 1
 
-        # Update proportions
-        df_game.at[i, 'proportion_1'] = count_1 / total_rounds
-        df_game.at[i, 'proportion_2'] = count_2 / total_rounds
-        df_game.at[i, 'proportion_3'] = count_3 / total_rounds
-        df_game.at[i, 'proportion_4'] = count_4 / total_rounds
+        # Only calculate proportions if total_rounds > 0
+        if total_rounds > 0:
+            # Calculate proportions
+            df_game.at[i, 'proportion_1'] = float(count_1) / total_rounds
+            df_game.at[i, 'proportion_2'] = float(count_2) / total_rounds
+            df_game.at[i, 'proportion_3'] = float(count_3) / total_rounds
+            df_game.at[i, 'proportion_4'] = float(count_4) / total_rounds
 
         prop_1 = df_game.at[i, 'proportion_1']
         prop_2 = df_game.at[i, 'proportion_2']
@@ -144,13 +162,13 @@ def update_result(winner):
                 next_rd_decision = 'Player'
             # If Banker wins, bet on Player next round
             elif row['result'] == 'Banker':
-                next_rd_decision = 'Player'
+                next_rd_decision = 'Banker'
             # Tie handling: look at the last non-tie round
             elif row['result'] == 'Tie' and last_non_tie is not None:
                 if df_game.at[last_non_tie, 'result'] == 'Player':
                     next_rd_decision = 'Player'
                 elif df_game.at[last_non_tie, 'result'] == 'Banker':
-                    next_rd_decision = 'Player'
+                    next_rd_decision = 'Banker'
 
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
 
