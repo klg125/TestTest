@@ -1,6 +1,22 @@
 import streamlit as st
 import pandas as pd
 
+# Inject custom CSS to remove spacing between buttons
+st.markdown(
+    """
+    <style>
+    .stButton button {
+        height: 40px;
+        width: 60px;
+        margin: 0px;
+        padding: 0px;
+        font-size: 20px;
+    }
+    </style>
+    """, 
+    unsafe_allow_html=True
+)
+
 # Function to calculate the value of a hand
 def calculate_hand(cards):
     total = sum([min(card, 10) for card in cards]) % 10
@@ -44,15 +60,16 @@ card_values = list(range(10))
 st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
 
 player_selected = None
-if len(st.session_state[f'player_cards_{game}']) < 3:    
+if len(st.session_state[f'player_cards_{game}']) < 3:
+    st.write("Click on a number to add a card for Player:")
+    
     # Arrange buttons in a grid (5 numbers per row, two rows)
     for row in range(0, 10, 5):
-        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns to fit better
+        cols = st.columns(5)
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                with col: 
-                    if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
-                        player_selected = card_values[row + i]
+                with col:
+                    st.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}")
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -69,14 +86,15 @@ st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}'
 
 banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
+    st.write("Click on a number to add a card for Banker:")
+
     # Arrange buttons in a grid (5 numbers per row, two rows)
     for row in range(0, 10, 5):
-        cols = st.columns([1, 1, 1, 1, 1])  # Narrower columns to fit better
+        cols = st.columns(5)
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                with col: 
-                    if col.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}", help="Click to add card"):
-                        banker_selected = card_values[row + i]
+                with col:
+                    st.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}")
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
