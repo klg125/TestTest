@@ -15,14 +15,24 @@ def determine_winner(player_total, banker_total):
     else:
         return "Tie"
 
-# Inject custom CSS to control button size
 st.markdown(
     """
     <style>
+    /* Reduce padding and margins of buttons */
     .stButton button {
-        height: 35px;
+        height: 40px;
         width: 50px;
-        font-size: 18px;
+        margin: 2px;
+        padding: 0px;
+        font-size: 16px;
+    }
+    /* Center the main container */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 100%;
     }
     </style>
     """, 
