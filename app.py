@@ -47,7 +47,7 @@ player_selected = None
 if len(st.session_state[f'player_cards_{game}']) < 3:    
     # Arrange buttons in a grid (5 numbers per row, two rows)
     for row in range(0, 10, 5):
-        cols = st.columns([1, 1, 1, 1, 1])  # Narrower columns to fit better
+        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns to fit better
         for i, col in enumerate(cols):
             if row + i < len(card_values):
                 if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
