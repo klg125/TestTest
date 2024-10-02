@@ -21,7 +21,7 @@ st.markdown(
     /* Reduce padding and margins of buttons */
     .stButton button {
         height: 40px;
-        width: 50px;
+        width: 30px;
         margin: 0px;
         padding: 0px;
         font-size: 16px;
@@ -32,7 +32,7 @@ st.markdown(
         padding-bottom: 1rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        max-width: 50%;
+        max-width: 100%;
     }
     </style>
     """, 
@@ -69,14 +69,14 @@ st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'roun
 
 def create_number_buttons(prefix, game):
     selected = None
-    cols = st.columns(5)  # Create a row with 5 columns
+    cols = st.columns(4)  # Create a row with 5 columns
     for i, col in enumerate(cols):
         with col:
             if st.button(f"{card_values[i]}", key=f"{prefix}_button_{i}_{game}"):
                 selected = card_values[i]
     
     # Create the second row of buttons
-    cols = st.columns(5)
+    cols = st.columns(4)
     for i, col in enumerate(cols):
         with col:
             if st.button(f"{card_values[i+5]}", key=f"{prefix}_button_{i+5}_{game}"):
