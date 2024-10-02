@@ -5,18 +5,21 @@ import pandas as pd
 st.markdown(
     """
     <style>
+    .main .block-container {
+        max-width: 50%;
+        margin: auto;
+    }
     .stButton button {
         height: 40px;
-        width: 30px;
+        width: 60px;
         margin: 0px;
         padding: 0px;
-        font-size: 15px;
+        font-size: 20px;
     }
     </style>
     """, 
     unsafe_allow_html=True
 )
-
 # Function to calculate the value of a hand
 def calculate_hand(cards):
     total = sum([min(card, 10) for card in cards]) % 10
