@@ -136,9 +136,9 @@ def update_result(winner):
 
         # Determine next round's decision based on current proportions
         next_rd_decision = 'No Bet'
-        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 20:
+        if prop_4 < min(prop_1, prop_2, prop_3) - min_below and prop_3 > prop_3_threshold_high and row['round_num'] > 5:
             next_rd_decision = 'Banker'
-        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below:
+        elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below and row['round_num'] > 5:
             next_rd_decision = 'Player'
 
         # New decision algorithm after round 20 if prop_1 and prop_2 are both below 0.23 and below prop_3 and prop_4
