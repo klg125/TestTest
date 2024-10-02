@@ -7,11 +7,11 @@ st.markdown(
     <style>
     .main .block-container {
         max-width: 50%;
-        margin: auto;
+        margin: 0px;
     }
     .stButton button {
         height: 40px;
-        width: 60px;
+        width: 30px;
         margin: 0px;
         padding: 0px;
         font-size: 20px;
