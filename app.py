@@ -67,21 +67,30 @@ card_values = list(range(10))
 # Horizontal row of numbers for card selection (mobile optimized: 5 numbers per row)
 st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
 
+def create_number_buttons(prefix, game):
+    selected = None
+    cols = st.columns(5)  # Create a row with 5 columns
+    for i, col in enumerate(cols):
+        with col:
+            if st.button(f"{card_values[i]}", key=f"{prefix}_button_{i}_{game}"):
+                selected = card_values[i]
+    
+    # Create the second row of buttons
+    cols = st.columns(5)
+    for i, col in enumerate(cols):
+        with col:
+            if st.button(f"{card_values[i+5]}", key=f"{prefix}_button_{i+5}_{game}"):
+                selected = card_values[i+5]
+
+    return selected
+    
 player_selected = None
 if len(st.session_state[f'player_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Player:")
+    player_selected = create_number_buttons("player", game)
+    if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
+        st.session_state[f'player_cards_{game}'].append(player_selected)
 
-    # Use narrow columns to reduce the width and fit on the page
-    for row in range(0, 10, 5):
-        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns for each button
-        for i, col in enumerate(cols):
-            if row + i < len(card_values):
-                with col:
-                    if st.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}"):
-                        player_selected = card_values[row + i]
-
-if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
-    st.session_state[f'player_cards_{game}'].append(player_selected)
 
 # Allow the user to undo the last card selection for the player
 if len(st.session_state[f'player_cards_{game}']) > 0 and st.button("Undo Player's Last Card"):
@@ -96,15 +105,9 @@ st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}'
 banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
     st.write("Click on a number to add a card for Banker:")
-
-    # Use narrow columns to reduce the width and fit on the page
-    for row in range(0, 10, 5):
-        cols = st.columns([0.5, 0.5, 0.5, 0.5, 0.5])  # Narrower columns for each button
-        for i, col in enumerate(cols):
-            if row + i < len(card_values):
-                with col:
-                    if st.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}"):
-                        banker_selected = card_values[row + i]
+    banker_selected = create_number_buttons("banker", game)
+    if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
+        st.session_state[f'banker_cards_{game}'].append(banker_selected)
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
