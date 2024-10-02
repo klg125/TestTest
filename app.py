@@ -45,15 +45,15 @@ st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'roun
 
 player_selected = None
 if len(st.session_state[f'player_cards_{game}']) < 3:
-    st.write("Click on a number to add a card for Player:")
     
     # Arrange buttons in a grid (3 numbers per row)
-    for row in range(0, 10, 3):
-        cols = st.columns(3)
+    # Arrange buttons in a 2-row grid with 5 numbers per row
+    for row in range(0, 10, 5):
+        cols = st.columns(5)  # 5 numbers per row
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
-                    player_selected = card_values[row + i]
+                if col.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}", help="Click to add card"):
+                    player_selected = card_values[row + i] if len(st.session_state[f'player_cards_{game}']) < 3 else None
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -70,8 +70,6 @@ st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}'
 
 banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
-    st.write("Click on a number to add a card for Banker:")
-
    # Arrange buttons in a 2-row grid with 5 numbers per row
     for row in range(0, 10, 5):
         cols = st.columns(5)  # 5 numbers per row
