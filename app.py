@@ -154,7 +154,7 @@ def update_result(winner):
     st.session_state[f'proportions_{game}'] = {
         "proportion_1": df_game['proportion_1'].iloc[-1],
         "proportion_2": df_game['proportion_2'].iloc[-1],
-        "proportion_3': df_game['proportion_3'].iloc[-1],
+        "proportion_3": df_game['proportion_3'].iloc[-1],
         "proportion_4": df_game['proportion_4'].iloc[-1]
     }
 
