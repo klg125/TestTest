@@ -16,7 +16,7 @@ def determine_winner(player_total, banker_total):
         return "Tie"
 
 # Streamlit app
-st.title("Baccarat Simulator (Mobile-Optimized) 2")
+st.title("Baccarat Simulator (Mobile-Optimized)")
 
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
@@ -40,20 +40,18 @@ if f'df_game_{game}' not in st.session_state:
 # Available card values (0 to 9)
 card_values = list(range(10))
 
-# Horizontal row of numbers for card selection (mobile optimized: 3 numbers per row)
+# Horizontal row of numbers for card selection (mobile optimized: 5 numbers per row, narrower)
 st.subheader(f"Game {game}: Enter Player's Cards (Round {st.session_state[f'round_num_{game}']})")
 
 player_selected = None
-if len(st.session_state[f'player_cards_{game}']) < 3:
-    
-    # Arrange buttons in a grid (3 numbers per row)
-    # Arrange buttons in a 2-row grid with 5 numbers per row
+if len(st.session_state[f'player_cards_{game}']) < 3:    
+    # Arrange buttons in a grid (5 numbers per row, two rows)
     for row in range(0, 10, 5):
-        cols = st.columns(5)  # 5 numbers per row
+        cols = st.columns([1, 1, 1, 1, 1])  # Narrower columns to fit better
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                if col.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}", help="Click to add card"):
-                    player_selected = card_values[row + i] if len(st.session_state[f'player_cards_{game}']) < 3 else None
+                if col.button(f"{card_values[row + i]}", key=f"player_button_{row + i}_{game}", help="Click to add card"):
+                    player_selected = card_values[row + i]
 
 if player_selected is not None and len(st.session_state[f'player_cards_{game}']) < 3:
     st.session_state[f'player_cards_{game}'].append(player_selected)
@@ -70,13 +68,13 @@ st.subheader(f"Enter Banker's Cards (Round {st.session_state[f'round_num_{game}'
 
 banker_selected = None
 if len(st.session_state[f'banker_cards_{game}']) < 3:
-   # Arrange buttons in a 2-row grid with 5 numbers per row
+    # Arrange buttons in a grid (5 numbers per row, two rows)
     for row in range(0, 10, 5):
-        cols = st.columns(5)  # 5 numbers per row
+        cols = st.columns([1, 1, 1, 1, 1])  # Narrower columns to fit better
         for i, col in enumerate(cols):
             if row + i < len(card_values):
-                if col.button(f"{card_values[row + i]}", key=f"button_{row + i}_{game}", help="Click to add card"):
-                    banker_selected = card_values[row + i] if len(st.session_state[f'banker_cards_{game}']) < 3 else None
+                if col.button(f"{card_values[row + i]}", key=f"banker_button_{row + i}_{game}", help="Click to add card"):
+                    banker_selected = card_values[row + i]
 
 if banker_selected is not None and len(st.session_state[f'banker_cards_{game}']) < 3:
     st.session_state[f'banker_cards_{game}'].append(banker_selected)
@@ -206,4 +204,3 @@ if st.button("Reset Game"):
     st.session_state[f'banker_cards_{game}'] = []
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'player_cards', 'banker_cards', 'result', 'player_total', 'banker_total'])
     st.write(f"Game {game} reset successfully!")
-
