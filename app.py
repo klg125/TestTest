@@ -16,7 +16,7 @@ def determine_winner(player_total, banker_total):
         return "Tie"
 
 # Streamlit app
-st.title("Baccarat Simulator (Mobile-Optimized)")
+st.title("Baccarat Simulator (Mobile-Optimized) 2")
 
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
