@@ -32,17 +32,20 @@ st.title("Baccarat Simulator")
 # Add a game selector (G1, G2, G3, G4)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4"])
 
-# Initialize session state for cumulative wins and round number
+# Initialize session state for cumulative wins, round number, and proportions
 if f'cumulative_wins_{game}' not in st.session_state:
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
 
 if f'round_num_{game}' not in st.session_state:
     st.session_state[f'round_num_{game}'] = 1
 
+if f'proportions_{game}' not in st.session_state:
+    st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
+
 if f'df_game_{game}' not in st.session_state:
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result'])
 
-# Function to update results and calculate proportions and betting decision
+# Function to update results, calculate proportions, and betting decision
 def update_result(winner):
     round_num = st.session_state[f'round_num_{game}']
 
@@ -117,6 +120,14 @@ def update_result(winner):
 
     st.session_state[f'df_game_{game}'] = df_game
 
+    # Store the updated proportions
+    st.session_state[f'proportions_{game}'] = {
+        "proportion_1": df_game['proportion_1'].iloc[-1],
+        "proportion_2": df_game['proportion_2'].iloc[-1],
+        "proportion_3": df_game['proportion_3'].iloc[-1],
+        "proportion_4": df_game['proportion_4'].iloc[-1]
+    }
+
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
 
@@ -136,11 +147,16 @@ with col3:
     if st.button("Tie"):
         update_result("Tie")
 
-# Display cumulative wins in one line
-st.subheader(f"Cumulative Wins for {game}")
+# Display cumulative wins and proportions in one line
+proportions = st.session_state[f'proportions_{game}']
+st.subheader(f"Cumulative Wins and Proportions for {game}")
 st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
          f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
-         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']}")
+         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
+         f"**P1:** {proportions['proportion_1']:.2f} | "
+         f"**P2:** {proportions['proportion_2']:.2f} | "
+         f"**P3:** {proportions['proportion_3']:.2f} | "
+         f"**P4:** {proportions['proportion_4']:.2f}")
 
 # Display current betting decisions, with most recent one at the top (stacked layout)
 if f'df_game_{game}' in st.session_state:
@@ -153,5 +169,6 @@ if f'df_game_{game}' in st.session_state:
 if st.button("Reset Game"):
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
     st.session_state[f'round_num_{game}'] = 1
+    st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result'])
     st.write(f"**Game {game} reset successfully!**")
