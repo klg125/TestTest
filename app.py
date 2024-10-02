@@ -95,10 +95,12 @@ def update_result(winner):
         df_game['proportion_4'] = 0
         df_game['next_rd_decision'] = 'No Bet'
         df_game['profit'] = 0
-
-    # Track counts for new column
+        # Track counts for new column
+    non_tie_rounds = 0  # This will count non-tie rounds only
     for i, row in df_game.iterrows():
         if row['result'] != 'Tie':
+            non_tie_rounds += 1  # Increment non-tie rounds only
+    
             if last_non_tie is not None:
                 if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 1
@@ -109,22 +111,24 @@ def update_result(winner):
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 3
             last_non_tie = i
-
-        if df_game.at[i, 'new_column'] == 1:
-            count_1 += 1
-        elif df_game.at[i, 'new_column'] == 2:
-            count_2 += 1
-        elif df_game.at[i, 'new_column'] == 3:
-            count_3 += 1
-        elif df_game.at[i, 'new_column'] == 4:
-            count_4 += 1
-
-        # Update proportions
-        df_game.at[i, 'proportion_1'] = count_1 / total_rounds
-        df_game.at[i, 'proportion_2'] = count_2 / total_rounds
-        df_game.at[i, 'proportion_3'] = count_3 / total_rounds
-        df_game.at[i, 'proportion_4'] = count_4 / total_rounds
-
+    
+            # Update counts based on new_column
+            if df_game.at[i, 'new_column'] == 1:
+                count_1 += 1
+            elif df_game.at[i, 'new_column'] == 2:
+                count_2 += 1
+            elif df_game.at[i, 'new_column'] == 3:
+                count_3 += 1
+            elif df_game.at[i, 'new_column'] == 4:
+                count_4 += 1
+    
+        # Calculate proportions based on non-tie rounds
+        if non_tie_rounds > 0:
+            df_game.at[i, 'proportion_1'] = count_1 / non_tie_rounds
+            df_game.at[i, 'proportion_2'] = count_2 / non_tie_rounds
+            df_game.at[i, 'proportion_3'] = count_3 / non_tie_rounds
+            df_game.at[i, 'proportion_4'] = count_4 / non_tie_rounds
+    
         prop_1 = df_game.at[i, 'proportion_1']
         prop_2 = df_game.at[i, 'proportion_2']
         prop_3 = df_game.at[i, 'proportion_3']
