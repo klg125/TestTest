@@ -48,19 +48,6 @@ if f'df_game_{game}' not in st.session_state:
 if f'profit_{game}' not in st.session_state:
     st.session_state[f'profit_{game}'] = 0
 
-# Function to calculate profit based on the previous round's decision and the current result
-def calculate_profit(result, decision, current_profit):
-    if decision == 'Banker':
-        if result == 'Banker':
-            current_profit += 0.95  # Banker win with commission
-        elif result == 'Player':
-            current_profit -= 1  # Loss on Banker bet
-    elif decision == 'Player':
-        if result == 'Player':
-            current_profit += 1  # Win on Player bet
-        elif result == 'Banker':
-            current_profit -= 1  # Loss on Player bet
-    return current_profit
 
 # Function to update results, calculate next round's decision, and profit
 def update_result(winner):
@@ -84,7 +71,7 @@ def update_result(winner):
     prop_4_threshold_high = 0.32
     min_below = 0.02
     last_non_tie = None
-    profit = st.session_state[f'profit_{game}']
+  
 
     # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
@@ -172,14 +159,6 @@ def update_result(winner):
 
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
 
-    # Now calculate the profit for this round based on the previous round's next_rd_decision
-    if total_rounds > 1:  # If we're beyond the first round
-        previous_round = df_game.iloc[-2]  # Use previous round's decision
-        profit = calculate_profit(winner, previous_round['next_rd_decision'], profit)
-        df_game.at[total_rounds-1, 'profit'] = profit
-
-    # Update the session state with accumulated profit
-    st.session_state[f'profit_{game}'] = profit
     st.session_state[f'df_game_{game}'] = df_game
 
     # Store the updated proportions
@@ -225,7 +204,7 @@ if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
+        st.write(df_game[['round_num', 'result', 'next_rd_decision']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
@@ -233,5 +212,4 @@ if st.button("Reset Game"):
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
     st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
-    st.session_state[f'profit_{game}'] = 0
     st.write(f"**Game {game} reset successfully!**")
