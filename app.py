@@ -97,8 +97,8 @@ def data_processing(df_game):
     # Apply support and resistance calculation
     df_game = calculate_support_resistance(df_game)
 
-    df_game['slope_rsi_p3'] = compute_slope(df_game['rsi_p3'], window=5)
-    df_game['slope_rsi_p4'] = compute_slope(df_game['rsi_p4'], window=5)
+    df_game['slope_rsi_p3'] = calculate_slope(df_game['rsi_p3'], window=5)
+    df_game['slope_rsi_p4'] = calculate_slope(df_game['rsi_p4'], window=5)
 
     return df_game
 
