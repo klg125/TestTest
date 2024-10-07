@@ -86,19 +86,19 @@ def calculate_support_resistance(df):
 def calculate_slope(series, offset=2):
     return (series - series.shift(offset)) / offset
 
-# Main data processing function
 def data_processing(df_game):
-    # Apply RSI calculation
-    df_game['rsi_p1'] = calculate_rsi(df_game['proportion_1'], window=10)
-    df_game['rsi_p2'] = calculate_rsi(df_game['proportion_2'], window=10)
-    df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10)
-    df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10)
+    # Apply RSI calculation and round to nearest integer (no decimal points)
+    df_game['rsi_p1'] = calculate_rsi(df_game['proportion_1'], window=10).round(0).astype(int)
+    df_game['rsi_p2'] = calculate_rsi(df_game['proportion_2'], window=10).round(0).astype(int)
+    df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10).round(0).astype(int)
+    df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10).round(0).astype(int)
 
     # Apply support and resistance calculation
     df_game = calculate_support_resistance(df_game)
 
-    df_game['slope_rsi_p3'] = calculate_slope(df_game['rsi_p3'], offset=5)
-    df_game['slope_rsi_p4'] = calculate_slope(df_game['rsi_p4'], offset=5)
+    # Calculate slope and round to one decimal point
+    df_game['slope_p3'] = calculate_slope(df_game['p3'], offset=5).round(1)
+    df_game['slope_p4'] = calculate_slope(df_game['p4'], offset=5).round(1)
 
     return df_game
 
@@ -303,7 +303,7 @@ if f'df_game_{game}' in st.session_state:
         # Display RSI, slopes, support, and resistance
         st.subheader(f"RSI, Slopes, Support, and Resistance for {game}")
         display_df = df_game[['round_num', 'rsi_p3', 'rsi_p4',
-                                'slope_rsi_p3', 'slope_rsi_p4',
+                                'slope_p3', 'slope_p4',
                               'support', 'resistance']].copy()
         st.write(display_df.iloc[::-1].reset_index(drop=True))
 
