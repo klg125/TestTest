@@ -302,8 +302,8 @@ if f'df_game_{game}' in st.session_state:
 
         # Display RSI, slopes, support, and resistance
         st.subheader(f"RSI, Slopes, Support, and Resistance for {game}")
-        display_df = df_game[['round_num', 'rsi_p1', 'rsi_p2', 'rsi_p3', 'rsi_p4',
-                              'slope_rsi_p1', 'slope_rsi_p2', 'slope_rsi_p3', 'slope_rsi_p4',
+        display_df = df_game[['round_num', 'rsi_p3', 'rsi_p4',
+                                'slope_rsi_p3', 'slope_rsi_p4',
                               'support', 'resistance']].copy()
         st.write(display_df.iloc[::-1].reset_index(drop=True))
 
