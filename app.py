@@ -125,7 +125,9 @@ def update_result(winner):
         'Cumulative Wins/Losses': [st.session_state[f'cumulative_wins_{game}']['Player'] - st.session_state[f'cumulative_wins_{game}']['Banker']]
     })
     st.session_state[f'df_game_{game}'] = pd.concat([st.session_state[f'df_game_{game}'], new_row], ignore_index=True)
-
+    if 'new_column' not in df_game.columns:
+        df_game['new_column'] = 0  # Initialize the column with default values (0)
+    
     # Update cumulative wins
     st.session_state[f'cumulative_wins_{game}'][winner] += 1
 
