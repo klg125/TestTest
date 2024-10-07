@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from scipy.stats import linregress
+
 
 # Inject custom CSS to adjust button sizes and reduce spacing
 st.markdown(
@@ -81,18 +81,10 @@ def calculate_support_resistance(df):
     df['resistance'] = resistance
     return df
 
-# Function to calculate slope
-def compute_slope(series, window=5):
-    slopes = [np.nan]*len(series)
-    for i in range(window, len(series)):
-        y = series[i-window:i]
-        x = np.arange(window)
-        if y.isnull().any():
-            continue
-        else:
-            slope, intercept, r_value, p_value, std_err = linregress(x, y)
-            slopes[i] = slope
-    return slopes
+
+# Function to calculate slope over 2 rounds
+def calculate_slope(series, offset=2):
+    return (series - series.shift(offset)) / offset
 
 # Main data processing function
 def data_processing(df_game):
