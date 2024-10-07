@@ -1,11 +1,11 @@
-import streamlit as st
+import numpy as np
 import pandas as pd
+import streamlit as st
 
 # Inject custom CSS to adjust button sizes and reduce spacing
 st.markdown(
     """
     <style>
-    /* Reduce padding and margins of buttons */
     .stButton button {
         height: 40px;
         width: 80px;
@@ -13,7 +13,6 @@ st.markdown(
         padding: 0px;
         font-size: 16px;
     }
-    /* Center the main container */
     .main .block-container {
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
@@ -26,10 +25,63 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Streamlit app
-st.title("Baccarat Simulator")
+# RSI calculation function
+def calculate_rsi(series, window=10):
+    delta = series.diff()
+    up = delta.clip(lower=0)
+    down = -1 * delta.clip(upper=0)
+    roll_up = up.rolling(window).mean()
+    roll_down = down.rolling(window).mean()
+    rs = roll_up / roll_down
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
 
-# Add a game selector (G1, G2, G3, G4, G5, G6)
+# Slope calculation function
+def calculate_slope(series, window=2):
+    return (series - series.shift(window)) / window
+
+# Support and resistance calculation function
+def calculate_support_resistance(df):
+    cumulative_wins_losses = df['Cumulative Wins/Losses'].values
+    support = np.full(len(cumulative_wins_losses), np.nan)
+    resistance = np.full(len(cumulative_wins_losses), np.nan)
+
+    last_low = np.inf
+    last_high = -np.inf
+    low_verified = False
+    high_verified = False
+    current_support = np.nan
+    current_resistance = np.nan
+
+    for i in range(2, len(cumulative_wins_losses)):  # Start at index 2 for verification condition
+        # Check for new low and verify it
+        if cumulative_wins_losses[i] < last_low:
+            last_low = cumulative_wins_losses[i]
+            low_verified = False  # Reset verification on new low
+        elif not low_verified and cumulative_wins_losses[i] > last_low:  # Verification occurs after the low is crossed from above
+            low_verified = True
+        
+        if low_verified:
+            current_support = last_low
+        support[i] = current_support  # Keep the old support if no new low is verified
+
+        # Check for new high and verify it
+        if cumulative_wins_losses[i] > last_high:
+            last_high = cumulative_wins_losses[i]
+            high_verified = False  # Reset verification on new high
+        elif not high_verified and cumulative_wins_losses[i] < last_high:  # Verification occurs after the high is crossed from below
+            high_verified = True
+
+        if high_verified:
+            current_resistance = last_high
+        resistance[i] = current_resistance  # Keep the old resistance if no new high is verified
+
+    df['support'] = support
+    df['resistance'] = resistance
+    return df
+
+# Game selector (G1, G2, G3, G4, G5, G6)
+st.title("Baccarat Simulator")
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
 
 # Initialize session state for cumulative wins, round number, proportions, decisions, and profits
@@ -43,7 +95,7 @@ if f'proportions_{game}' not in st.session_state:
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
 
 if f'df_game_{game}' not in st.session_state:
-    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
+    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance'])
 
 if f'profit_{game}' not in st.session_state:
     st.session_state[f'profit_{game}'] = 0
@@ -62,22 +114,34 @@ def calculate_profit(result, decision, current_profit):
             current_profit -= 1  # Loss on Player bet
     return current_profit
 
-# Function to update results, calculate next round's decision, and profit
+# Function to update results, calculate RSI, slope, support, resistance, next decision, and profit
 def update_result(winner):
     round_num = st.session_state[f'round_num_{game}']
 
     # Add result to game DataFrame
     new_row = pd.DataFrame({
         'round_num': [round_num],
-        'result': [winner]
+        'result': [winner],
+        'Cumulative Wins/Losses': [st.session_state[f'cumulative_wins_{game}']['Player'] - st.session_state[f'cumulative_wins_{game}']['Banker']]
     })
     st.session_state[f'df_game_{game}'] = pd.concat([st.session_state[f'df_game_{game}'], new_row], ignore_index=True)
 
     # Update cumulative wins
     st.session_state[f'cumulative_wins_{game}'][winner] += 1
 
-    # Proportions and next round decision logic
+    # Calculate RSI, slope, support, and resistance
     df_game = st.session_state[f'df_game_{game}']
+    if len(df_game) >= 10:
+        df_game['rsi_p3'] = calculate_rsi(df_game['Cumulative Wins/Losses'], window=10)
+        df_game['rsi_p4'] = calculate_rsi(df_game['Cumulative Wins/Losses'], window=10)
+    if len(df_game) >= 2:
+        df_game['slope_p3'] = calculate_slope(df_game['Cumulative Wins/Losses'])
+        df_game['slope_p4'] = calculate_slope(df_game['Cumulative Wins/Losses'])
+
+    df_game = calculate_support_resistance(df_game)
+    st.session_state[f'df_game_{game}'] = df_game
+
+    # Proportions and next round decision logic
     total_rounds = len(df_game)
     count_1 = count_2 = count_3 = count_4 = 0
     prop_3_threshold_high = 0.32
@@ -86,16 +150,6 @@ def update_result(winner):
     last_non_tie = None
     profit = st.session_state[f'profit_{game}']
 
-    # Initialize new columns if not present
-    if 'new_column' not in df_game.columns:
-        df_game['new_column'] = 0
-        df_game['proportion_1'] = 0
-        df_game['proportion_2'] = 0
-        df_game['proportion_3'] = 0
-        df_game['proportion_4'] = 0
-        df_game['next_rd_decision'] = 'No Bet'
-        df_game['profit'] = 0
-        # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
     for i, row in df_game.iterrows():
         if row['result'] != 'Tie':
@@ -141,40 +195,16 @@ def update_result(winner):
         elif prop_4 > prop_4_threshold_high and prop_3 < min(prop_1, prop_2, prop_4) - min_below and row['round_num'] > 5:
             next_rd_decision = 'Player'
 
-        # New decision algorithm after round 20 if prop_1 and prop_2 are both below 0.23 and below prop_3 and prop_4
-        if row['round_num'] > 20 and prop_1 < 0.23 and prop_2 < 0.23 and prop_1 < prop_3 and prop_2 < prop_3 and prop_1 < prop_4 and prop_2 < prop_4:
-            # If Player wins, bet on Player next round
-            if row['result'] == 'Player':
-                next_rd_decision = 'Player'
-            # If Banker wins, bet on Player next round
-            elif row['result'] == 'Banker':
-                next_rd_decision = 'Banker'
-            # Tie handling: look at the last non-tie round
-            elif row['result'] == 'Tie' and last_non_tie is not None:
-                if df_game.at[last_non_tie, 'result'] == 'Player':
-                    next_rd_decision = 'Player'
-                elif df_game.at[last_non_tie, 'result'] == 'Banker':
-                    next_rd_decision = 'Banker'
-
         df_game.at[i, 'next_rd_decision'] = next_rd_decision
 
-    # Now calculate the profit for this round based on the previous round's next_rd_decision
-    if total_rounds > 1:  # If we're beyond the first round
+    # Calculate profit for this round
+    if total_rounds > 1:
         previous_round = df_game.iloc[-2]  # Use previous round's decision
         profit = calculate_profit(winner, previous_round['next_rd_decision'], profit)
-        df_game.at[total_rounds-1, 'profit'] = profit
+        df_game.at[total_rounds - 1, 'profit'] = profit
 
-    # Update the session state with accumulated profit
     st.session_state[f'profit_{game}'] = profit
     st.session_state[f'df_game_{game}'] = df_game
-
-    # Store the updated proportions
-    st.session_state[f'proportions_{game}'] = {
-        "proportion_1": df_game['proportion_1'].iloc[-1],
-        "proportion_2": df_game['proportion_2'].iloc[-1],
-        "proportion_3": df_game['proportion_3'].iloc[-1],
-        "proportion_4": df_game['proportion_4'].iloc[-1]
-    }
 
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
@@ -206,18 +236,18 @@ st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} |
          f"**P3:** {proportions['proportion_3']:.2f} | "
          f"**P4:** {proportions['proportion_4']:.2f}")
 
-# Display current betting decisions, with most recent one at the top (stacked layout)
+# Display RSI, slope, support, and resistance
+st.subheader(f"RSI, Slope, Support, and Resistance for {game}")
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
-        st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
+        st.write(df_game[['round_num', 'rsi_p3', 'rsi_p4', 'slope_p3', 'slope_p4', 'support', 'resistance']].iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game (back to round 1 for the selected game)
 if st.button("Reset Game"):
     st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
     st.session_state[f'round_num_{game}'] = 1
     st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
-    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
+    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance'])
     st.session_state[f'profit_{game}'] = 0
     st.write(f"**Game {game} reset successfully!**")
