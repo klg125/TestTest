@@ -83,7 +83,7 @@ def calculate_support_resistance(df):
 
 
 # Function to calculate slope over 2 rounds
-def compute_slope(series, offset=2):
+def calculate_slope(series, offset=2):
     return (series - series.shift(offset)) / offset
 
 # Main data processing function
@@ -94,18 +94,9 @@ def data_processing(df_game):
     df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10)
     df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10)
 
-    # Calculate rolling averages for proportions
-    df_game['rolling_avg_p3_7'] = df_game['proportion_3'].rolling(window=7).mean()
-    df_game['rolling_avg_p4_7'] = df_game['proportion_4'].rolling(window=7).mean()
-    df_game['rolling_avg_p3_15'] = df_game['proportion_3'].rolling(window=15).mean()
-    df_game['rolling_avg_p4_15'] = df_game['proportion_4'].rolling(window=15).mean()
-
     # Apply support and resistance calculation
     df_game = calculate_support_resistance(df_game)
 
-    # Calculate slopes of RSI columns
-    df_game['slope_rsi_p1'] = compute_slope(df_game['rsi_p1'], window=5)
-    df_game['slope_rsi_p2'] = compute_slope(df_game['rsi_p2'], window=5)
     df_game['slope_rsi_p3'] = compute_slope(df_game['rsi_p3'], window=5)
     df_game['slope_rsi_p4'] = compute_slope(df_game['rsi_p4'], window=5)
 
