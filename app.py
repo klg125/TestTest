@@ -83,7 +83,7 @@ def calculate_support_resistance(df):
 
 
 # Function to calculate slope over 2 rounds
-def calculate_slope(series, offset=2):
+def compute_slope(series, offset=2):
     return (series - series.shift(offset)) / offset
 
 # Main data processing function
