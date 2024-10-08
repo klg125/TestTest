@@ -170,13 +170,6 @@ def update_result(winner):
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
-    # Process the game data
-    df_game = data_processing(df_game)
-
-    # Calculate slopes for p3 and p4
-    df_game['p3_slope_5'] = calculate_slope(df_game['proportion_3'], offset=slope_offset)
-    df_game['p4_slope_5'] = calculate_slope(df_game['proportion_4'], offset=slope_offset)
-
      # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
         df_game['new_column'] = 0
@@ -320,7 +313,7 @@ def update_result(winner):
         # Store the next round decision and update previous decision
         df_game.at[i, 'next_rd_decision'] = next_bet
         previous_decision = next_bet
-
+        
     # Update bankroll and profit
     st.session_state[f'bankroll_{game}'] = B
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
@@ -328,6 +321,10 @@ def update_result(winner):
     st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
 
     # Move to the next round
+      # Process the data to calculate RSI, slopes, support, and resistance
+    df_game['game_number'] = game  # Add game_number column for processing
+    df_game = data_processing(df_game)
+
     st.session_state[f'round_num_{game}'] += 1
 
     # Update the session state with accumulated profit
