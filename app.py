@@ -451,6 +451,15 @@ with col3:
         update_result("Tie")
 
 
+# Button to reset the game
+if st.button("Reset Game"):
+    st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
+    st.session_state[f'round_num_{game}'] = 1
+    st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
+    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
+    st.session_state[f'profit_{game}'] = 0
+    st.write(f"**Game {game} reset successfully!**")
+    
 # Display current betting decisions and profits
 if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
@@ -469,11 +478,3 @@ st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} |
          f"**P3:** {proportions['proportion_3']:.2f} | "
          f"**P4:** {proportions['proportion_4']:.2f}")
 
-# Button to reset the game
-if st.button("Reset Game"):
-    st.session_state[f'cumulative_wins_{game}'] = {"Player": 0, "Banker": 0, "Tie": 0}
-    st.session_state[f'round_num_{game}'] = 1
-    st.session_state[f'proportions_{game}'] = {"proportion_1": 0, "proportion_2": 0, "proportion_3": 0, "proportion_4": 0}
-    st.session_state[f'df_game_{game}'] = pd.DataFrame(columns=['round_num', 'result', 'next_rd_decision', 'profit'])
-    st.session_state[f'profit_{game}'] = 0
-    st.write(f"**Game {game} reset successfully!**")
