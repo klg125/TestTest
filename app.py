@@ -88,19 +88,20 @@ def calculate_slope(series, offset=2):
 
 def data_processing(df_game):
     # Apply RSI calculation and round to nearest integer (no decimal points)
-    df_game['rsi_p1'] = calculate_rsi(df_game['proportion_1'], window=10).round(0).astype(int)
-    df_game['rsi_p2'] = calculate_rsi(df_game['proportion_2'], window=10).round(0).astype(int)
-    df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10).round(0).astype(int)
-    df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10).round(0).astype(int)
+    df_game['rsi_p1'] = calculate_rsi(df_game['proportion_1'], window=10).round(0).fillna(0).astype(int)
+    df_game['rsi_p2'] = calculate_rsi(df_game['proportion_2'], window=10).round(0).fillna(0).astype(int)
+    df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10).round(0).fillna(0).astype(int)
+    df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10).round(0).fillna(0).astype(int)
 
     # Apply support and resistance calculation
     df_game = calculate_support_resistance(df_game)
 
-    # Calculate slope and round to one decimal point
-    df_game['slope_p3'] = calculate_slope(df_game['p3'], offset=5).round(1)
-    df_game['slope_p4'] = calculate_slope(df_game['p4'], offset=5).round(1)
+    # Calculate slope and round to one decimal point, fill NaN with 0
+    df_game['slope_p3'] = calculate_slope(df_game['p3'], offset=5).round(1).fillna(0)
+    df_game['slope_p4'] = calculate_slope(df_game['p4'], offset=5).round(1).fillna(0)
 
     return df_game
+
 
 # Streamlit app
 st.title("Baccarat Simulator")
