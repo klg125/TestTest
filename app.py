@@ -177,7 +177,7 @@ def update_result(winner):
 
      # Additional parameters for slope-based strategies
     slope_2_offset = 4
-    multi_factor = 2.56
+
 
     # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
@@ -266,8 +266,11 @@ def update_result(winner):
     # --- 2. Apply data_processing (So RSI, slope, etc. are available) ---
     df_game = data_processing(df_game)
 
-    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5)
-    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5)
+    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=2)
+    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=2)
+
+    df_game['slope_p3_5'] = calculate_slope(df_game['proportion_3'], offset=5)
+    df_game['slope_p4_5'] = calculate_slope(df_game['proportion_4'], offset=5)
 
    
     # --- 1. Apply Bounce Betting Strategy ---
@@ -286,7 +289,7 @@ def update_result(winner):
             if (0 <= cumulative_wins_losses - current_support <= 2) and rsi_p4 > rsi_p3 and rsi_p4 > rsi_max:
                 if (df_game['rsi_p4'].iloc[i-1] <= df_game['rsi_p3'].iloc[i-1] or
                     df_game['rsi_p4'].iloc[i-2] <= df_game['rsi_p3'].iloc[i-2] or
-                    df_game['rsi_p4'].iloc[i-3] <= df_game['rsi_p3'].iloc[i-3]) and df_game['p4_slope_5'].iloc[i] > 0 and df_game['p3_slope_5'].iloc[i] < 0:
+                    df_game['rsi_p4'].iloc[i-3] <= df_game['rsi_p3'].iloc[i-3]) and df_game['slope_p4_5'].iloc[i] > 0 and df_game['slope_p3_5'].iloc[i] < 0:
                     next_bet = 'Player'
                     bounce_active = True
 
@@ -295,7 +298,7 @@ def update_result(winner):
             if (0 <= current_resistance - cumulative_wins_losses <= 2) and rsi_p3 > rsi_p4 and rsi_p3 > rsi_max:
                 if (df_game['rsi_p3'].iloc[i-1] <= df_game['rsi_p4'].iloc[i-1] or
                     df_game['rsi_p3'].iloc[i-2] <= df_game['rsi_p4'].iloc[i-2] or
-                    df_game['rsi_p3'].iloc[i-3] <= df_game['rsi_p4'].iloc[i-3]) and df_game['p3_slope_5'].iloc[i] > 0 and df_game['p4_slope_5'].iloc[i] < 0:
+                    df_game['rsi_p3'].iloc[i-3] <= df_game['rsi_p4'].iloc[i-3]) and df_game['slope_p3_5'].iloc[i] > 0 and df_game['slope_p4_5'].iloc[i] < 0:
                     next_bet = 'Banker'
                     bounce_active = True
 
@@ -307,10 +310,11 @@ def update_result(winner):
                 next_bet = 'Banker'
 
         # --- 2. Apply Slope-Based Betting Strategy ---
+        j = i
         if next_bet == 'No Bet':  # Only apply if bounce strategy did not trigger
             if j >= 20:
                 # Cross Resistance Strategy
-                if df_game['p4_slope'].iloc[j] > 0 and df_game['p3_slope'].iloc[j] < 0 and df_game['p4_slope_5'].iloc[j] > 0 and df_game['p3_slope_5'].iloc[j] < 0:
+                if df_game['slope_p4'].iloc[j] > 0 and df_game['slope_p3'].iloc[j] < 0 and df_game['slope_p4_5'].iloc[j] > 0 and df_game['slope_p3_5'].iloc[j] < 0:
                     if rsi_p4 - 5 > rsi_p3:  
                         cumulative_wins_losses_now = df_game.at[j, 'Cumulative Wins/Losses']
                         cumulative_wins_losses_ago = df_game.at[j-4, 'Cumulative Wins/Losses']
@@ -319,7 +323,7 @@ def update_result(winner):
                             next_bet = 'Player'
 
                 # Cross Support Strategy
-                elif df_game['p3_slope'].iloc[j] > 0 and df_game['p4_slope'].iloc[j] < 0 and df_game['p3_slope_5'].iloc[j] > 0 and df_game['p4_slope_5'].iloc[j] < 0:
+                elif df_game['slope_p3'].iloc[j] > 0 and df_game['slope_p4'].iloc[j] < 0 and df_game['slope_p3_5'].iloc[j] > 0 and df_game['slope_p4_5'].iloc[j] < 0:
                     if rsi_p3 - 5 > rsi_p4:  # Assuming rsi_diff = 5
                         cumulative_wins_losses_now = df_game.at[j, 'Cumulative Wins/Losses']
                         cumulative_wins_losses_ago = df_game.at[j-4, 'Cumulative Wins/Losses']
