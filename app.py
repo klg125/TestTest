@@ -365,7 +365,7 @@ if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit']].iloc[::-1].reset_index(drop=True))
+        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'proportion_1', 'proportion_2', 'proportion_3', 'proportion_4']].iloc[::-1].reset_index(drop=True))
 
         # Display RSI, slopes, support, and resistance
         st.subheader(f"RSI, Slopes, Support, and Resistance for {game}")
