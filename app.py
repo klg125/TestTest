@@ -162,6 +162,7 @@ def update_result(winner):
     consecutive_losses = 0
     wins_total = 0
     bounce_active = False
+    last_non_tie = None
     previous_decision = None
     profit = st.session_state[f'profit_{game}']
     B = st.session_state[f'bankroll_{game}']  # Initial bankroll
