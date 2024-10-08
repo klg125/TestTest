@@ -382,10 +382,11 @@ def update_result(winner):
         previous_decision = next_bet
         
     # --- 4. Update bankroll and session state ---
-    st.session_state[f'initial_bankroll_{game}'] = B
+    
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
     st.session_state[f'df_game_{game}'] = df_game
     st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
+    st.session_state[f'initial_bankroll_{game}'] = B
     # Store the updated proportions
     st.session_state[f'proportions_{game}'] = {
         "proportion_1": df_game['proportion_1'].iloc[-1],
