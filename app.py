@@ -484,11 +484,9 @@ if f'df_game_{game}' in st.session_state:
               # Display cumulative wins and proportions
         proportions = st.session_state[f'proportions_{game}']
     
-        st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
-             f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
-             f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
-             f"**P1:** {proportions['proportion_1']:.2f} | "
-             f"**P2:** {proportions['proportion_2']:.2f} | "
+        st.write(f"**P:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
+             f"**B:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
+             f"**T:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
              f"**P3:** {proportions['proportion_3']:.2f} | "
              f"**P4:** {proportions['proportion_4']:.2f}")
         # Create a dictionary to rename the columns with shorter names
