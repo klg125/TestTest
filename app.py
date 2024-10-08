@@ -315,7 +315,13 @@ def update_result(winner):
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
     st.session_state[f'df_game_{game}'] = df_game
     st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
-
+    # Store the updated proportions
+    st.session_state[f'proportions_{game}'] = {
+        "proportion_1": df_game['proportion_1'].iloc[-1],
+        "proportion_2": df_game['proportion_2'].iloc[-1],
+        "proportion_3": df_game['proportion_3'].iloc[-1],
+        "proportion_4": df_game['proportion_4'].iloc[-1]
+    }
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
 
