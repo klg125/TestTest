@@ -438,7 +438,6 @@ st.markdown(f"""
     <h4 style='font-size:18px;'>Game {game}: Who Won Round {st.session_state[f'round_num_{game}']}?</h4>
 """, unsafe_allow_html=True)
 # Buttons for each round (Banker, Player, Tie)
-st.subheader(f"Game {game}: Who Won Round {st.session_state[f'round_num_{game}']}?")
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -469,7 +468,12 @@ if f'df_game_{game}' in st.session_state:
   
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
-        st.subheader(f"Betting Decisions and Data for {game}")
+
+
+        st.markdown(f"""
+    <h4 style='font-size:18px;'>Betting Decisions and Data for {game}?</h4>
+""", unsafe_allow_html=True)
+
     
               # Display cumulative wins and proportions
         proportions = st.session_state[f'proportions_{game}']
