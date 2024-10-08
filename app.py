@@ -190,7 +190,8 @@ def update_result(winner):
     non_tie_rounds = 0  # This will count non-tie rounds only
 
     
-        
+    count_1 = count_2 = count_3 = count_4 = 0
+
     prev_proportion_1, prev_proportion_2, prev_proportion_3, prev_proportion_4 = 0, 0, 0, 0
 
     # --- 1. Basic Proportion Calculation (Before data_processing) ---
@@ -228,11 +229,16 @@ def update_result(winner):
                     df_game.at[i, 'new_column'] = 3
             last_non_tie = i
     
-            # Update counts based on new_column
-            count_1 = df_game['new_column'].value_counts().get(1, 0)
-            count_2 = df_game['new_column'].value_counts().get(2, 0)
-            count_3 = df_game['new_column'].value_counts().get(3, 0)
-            count_4 = df_game['new_column'].value_counts().get(4, 0)
+              # Update counts based on new_column
+            if df_game.at[i, 'new_column'] == 1:
+                count_1 += 1
+            elif df_game.at[i, 'new_column'] == 2:
+                count_2 += 1
+            elif df_game.at[i, 'new_column'] == 3:
+                count_3 += 1
+            elif df_game.at[i, 'new_column'] == 4:
+                count_4 += 1
+
     
             # Calculate proportions based on non-tie rounds
             if non_tie_rounds > 1:
