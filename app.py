@@ -401,11 +401,11 @@ def update_result(winner):
         # Stopping conditions for bounce strategy
         if bounce_active and (rsi_p4 <= rsi_p3 and next_bet == 'Player') or cumulative_wins_losses >= current_resistance or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
             bounce_active = False
-            next_bet = "No Bet"
+            next_bet_size = base_bet_size
 
         if bounce_active and (rsi_p3 <= rsi_p4 and next_bet == 'Banker') or cumulative_wins_losses <= current_support or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
             bounce_active = False
-            next_bet = "No Bet"
+            next_bet_size = base_bet_size
 
     
         if slope_active:
