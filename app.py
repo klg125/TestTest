@@ -108,7 +108,7 @@ def data_processing(df_game):
 
 
 # Streamlit app
-st.title("Baccarat Simulator (BFT + Ok1)")
+st.title("Baccarat Simulator")
 
 # Add a game selector (G1, G2, G3, G4, G5, G6)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
