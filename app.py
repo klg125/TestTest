@@ -315,7 +315,7 @@ def update_result(winner):
         
         if next_bet == 'No Bet':  # Only apply if bounce strategy did not trigger
              # Cross Resistance strategy: p4 upward slope, p3 downward slope for at least 2 rounds
-            if not slope_active and i >= 20 and df_game['slope_p4'].iloc[i] > 0 and df_game['slope_p3'].iloc[i] < 0 and df_game['p4_slope_5'].iloc[i] > 0 and df_game['p3_slope_5'].iloc[i] < 0:
+            if not slope_active and i >= 20 and df_game['slope_p4'].iloc[i] > 0 and df_game['slope_p3'].iloc[i] < 0 and df_game['slope_p4_5'].iloc[i] > 0 and df_game['slope_p3_5'].iloc[i] < 0:
                 if rsi_p4 - 1 > rsi_p3:
                     cumulative_wins_losses_ago = df_game.at[i - 4, 'Cumulative Wins/Losses']
                     cumulative_wins_losses_now = df_game.at[i, 'Cumulative Wins/Losses']
@@ -327,7 +327,7 @@ def update_result(winner):
                         slope_active = True  # Activate slope-based betting
 
             # Cross Support strategy: p3 upward slope, p4 downward slope for at least 2 rounds
-            elif not slope_active and i >= 20 and df_game['slope_p3'].iloc[i] > 0 and df_game['slope_p4'].iloc[i] < 0 and df_game['p3_slope_5'].iloc[i] > 0 and df_game['p4_slope_5'].iloc[i] < 0:
+            elif not slope_active and i >= 20 and df_game['slope_p3'].iloc[i] > 0 and df_game['slope_p4'].iloc[i] < 0 and df_game['slope_p3_5'].iloc[i] > 0 and df_game['slope_p4_5'].iloc[i] < 0:
                 if rsi_p3 - 1 > rsi_p4:
                     cumulative_wins_losses_ago = df_game.at[i - 4, 'Cumulative Wins/Losses']
                     cumulative_wins_losses_now = df_game.at[i, 'Cumulative Wins/Losses']
@@ -386,8 +386,7 @@ def update_result(winner):
             bounce_active = False
             next_bet = "No Bet"
 
-        
-        
+    
         if slope_active:
             if next_bet == 'Player' and rsi_p3 >= rsi_p4:
                 slope_active = False  # Deactivate slope-based betting
