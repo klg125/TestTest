@@ -185,7 +185,7 @@ def update_result(winner):
     # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
     # Apply the bounce strategy
-    for i in range(total_rounds):
+    for i, row in df_game.iterrows():
         
           # Calculate cumulative wins and losses based on non-tie rounds
         if i > 0:
