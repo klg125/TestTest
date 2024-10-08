@@ -462,6 +462,18 @@ if st.button("Reset Game"):
     
 # Display current betting decisions and profits
 if f'df_game_{game}' in st.session_state:
+        
+    # Display cumulative wins and proportions
+    proportions = st.session_state[f'proportions_{game}']
+
+
+    st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
+         f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
+         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
+         f"**P1:** {proportions['proportion_1']:.2f} | "
+         f"**P2:** {proportions['proportion_2']:.2f} | "
+         f"**P3:** {proportions['proportion_3']:.2f} | "
+         f"**P4:** {proportions['proportion_4']:.2f}")
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions and Profits for {game}")
@@ -484,15 +496,4 @@ if f'df_game_{game}' in st.session_state:
         
         # Display the DataFrame
         st.write(display_df.iloc[::-1].reset_index(drop=True))
-
-# Display cumulative wins and proportions
-proportions = st.session_state[f'proportions_{game}']
-st.subheader(f"Cumulative Wins and Proportions for {game}")
-st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
-         f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
-         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
-         f"**P1:** {proportions['proportion_1']:.2f} | "
-         f"**P2:** {proportions['proportion_2']:.2f} | "
-         f"**P3:** {proportions['proportion_3']:.2f} | "
-         f"**P4:** {proportions['proportion_4']:.2f}")
 
