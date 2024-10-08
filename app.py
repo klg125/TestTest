@@ -189,6 +189,10 @@ def update_result(winner):
     # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
 
+    
+        
+    prev_proportion_1, prev_proportion_2, prev_proportion_3, prev_proportion_4 = 0, 0, 0, 0
+
     # --- 1. Basic Proportion Calculation (Before data_processing) ---
     for i, row in df_game.iterrows():
         # Calculate cumulative wins and losses based on non-tie rounds
@@ -208,10 +212,12 @@ def update_result(winner):
             else:
                 df_game.at[i, 'Cumulative Wins/Losses'] = 0
 
+    
         if row['result'] != 'Tie':
             non_tie_rounds += 1  # Increment non-tie rounds only
-
+    
             if last_non_tie is not None:
+                # Assign a new value to `new_column` based on consecutive patterns of Player/Banker wins
                 if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 1
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Player':
@@ -221,19 +227,32 @@ def update_result(winner):
                 elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
                     df_game.at[i, 'new_column'] = 3
             last_non_tie = i
-
+    
             # Update counts based on new_column
             count_1 = df_game['new_column'].value_counts().get(1, 0)
             count_2 = df_game['new_column'].value_counts().get(2, 0)
             count_3 = df_game['new_column'].value_counts().get(3, 0)
             count_4 = df_game['new_column'].value_counts().get(4, 0)
-
+    
             # Calculate proportions based on non-tie rounds
-        if non_tie_rounds > 1:
-            df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
+            if non_tie_rounds > 1:
+                df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
+    
+                # Store the current proportions as the last valid proportions
+                prev_proportion_1 = df_game.at[i, 'proportion_1']
+                prev_proportion_2 = df_game.at[i, 'proportion_2']
+                prev_proportion_3 = df_game.at[i, 'proportion_3']
+                prev_proportion_4 = df_game.at[i, 'proportion_4']
+    
+        else:
+            # If the result is a tie, carry over the previous non-tie proportions
+            df_game.at[i, 'proportion_1'] = prev_proportion_1
+            df_game.at[i, 'proportion_2'] = prev_proportion_2
+            df_game.at[i, 'proportion_3'] = prev_proportion_3
+            df_game.at[i, 'proportion_4'] = prev_proportion_4
 
     # --- 2. Apply data_processing (So RSI, slope, etc. are available) ---
     df_game = data_processing(df_game)
