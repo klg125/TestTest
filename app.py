@@ -172,10 +172,30 @@ def update_result(winner):
         df_game['proportion_4'] = 0
         df_game['next_rd_decision'] = 'No Bet'
         df_game['profit'] = 0
+        df_game['Cumulative Wins/Losses'] = 0  # New column for cumulative wins and losses
+
 
     # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
     for i, row in df_game.iterrows():
+
+        
+          # Calculate cumulative wins and losses based on non-tie rounds
+        if i > 0:
+            if row['result'] == 'Player':
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses'] + 1
+            elif row['result'] == 'Banker':
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses'] - 1
+            else:
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses']
+        else:
+            # Initialize the first round cumulative wins/losses
+            if row['result'] == 'Player':
+                df_game.at[i, 'Cumulative Wins/Losses'] = 1
+            elif row['result'] == 'Banker':
+                df_game.at[i, 'Cumulative Wins/Losses'] = -1
+            else:
+                df_game.at[i, 'Cumulative Wins/Losses'] = 0
         if row['result'] != 'Tie':
             non_tie_rounds += 1  # Increment non-tie rounds only
 
