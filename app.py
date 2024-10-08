@@ -96,7 +96,6 @@ def data_processing(df_game):
         rs = roll_up / roll_down
         rsi = 100 - (100 / (1 + rs))
         return rsi
-
     
     df_game['rsi_p3'] = df_game['proportion_3'].transform(lambda x: calculate_rsi(x, window=10))
     df_game['rsi_p4'] = df_game['proportion_4'].transform(lambda x: calculate_rsi(x, window=10))
@@ -104,7 +103,6 @@ def data_processing(df_game):
     df_game = calculate_support_resistance(df_game)
 
     return df_game
-
 
 
 # Streamlit app
@@ -229,11 +227,11 @@ def update_result(winner):
             count_4 = df_game['new_column'].value_counts().get(4, 0)
 
             # Calculate proportions based on non-tie rounds
-            if non_tie_rounds > 1:
-                df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
-                df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
-                df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
-                df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
+        if non_tie_rounds > 1:
+            df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
 
     # --- 2. Apply data_processing (So RSI, slope, etc. are available) ---
     df_game = data_processing(df_game)
