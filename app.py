@@ -278,7 +278,6 @@ def update_result(winner):
 
     # Process the data to calculate RSI, slopes, support, and resistance
     df_game['game_number'] = game  # Add game_number column for processing
-    df_game['Cumulative Wins/Losses'] = df_game['profit']  # Use profit as cumulative wins/losses
     df_game = data_processing(df_game)
 
     # Update the session state with the processed dataframe
