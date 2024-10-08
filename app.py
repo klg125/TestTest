@@ -97,8 +97,8 @@ def data_processing(df_game):
     df_game = calculate_support_resistance(df_game)
 
     # Calculate slope and round to one decimal point, fill NaN with 0
-    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5).round(1).fillna(0)
-    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5).round(1).fillna(0)
+    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5).round(2).fillna(0)
+    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5).round(2).fillna(0)
 
     return df_game
 
