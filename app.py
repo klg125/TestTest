@@ -305,7 +305,7 @@ if f'df_game_{game}' in st.session_state:
         st.subheader(f"RSI, Slopes, Support, and Resistance for {game}")
         display_df = df_game[['round_num', 'rsi_p3', 'rsi_p4',
                                 'slope_p3', 'slope_p4',
-                              'support', 'resistance']].copy()
+                              'support', 'resistance', ''Cumulative Wins/Losses']].copy()
         st.write(display_df.iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game
