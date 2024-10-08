@@ -177,8 +177,76 @@ def update_result(winner):
     df_game['p3_slope_5'] = calculate_slope(df_game['proportion_3'], offset=slope_offset)
     df_game['p4_slope_5'] = calculate_slope(df_game['proportion_4'], offset=slope_offset)
 
+     # Initialize new columns if not present
+    if 'new_column' not in df_game.columns:
+        df_game['new_column'] = 0
+        df_game['proportion_1'] = 0
+        df_game['proportion_2'] = 0
+        df_game['proportion_3'] = 0
+        df_game['proportion_4'] = 0
+        df_game['next_rd_decision'] = 'No Bet'
+        df_game['profit'] = 0
+        df_game['Cumulative Wins/Losses'] = 0  # New column for cumulative wins and losses
+
+
+    # Track counts for new column
+    non_tie_rounds = 0  # This will count non-tie rounds only
     # Apply the bounce strategy
     for i in range(total_rounds):
+        
+          # Calculate cumulative wins and losses based on non-tie rounds
+        if i > 0:
+            if row['result'] == 'Player':
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses'] + 1
+            elif row['result'] == 'Banker':
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses'] - 1
+            else:
+                df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses']
+        else:
+            # Initialize the first round cumulative wins/losses
+            if row['result'] == 'Player':
+                df_game.at[i, 'Cumulative Wins/Losses'] = 1
+            elif row['result'] == 'Banker':
+                df_game.at[i, 'Cumulative Wins/Losses'] = -1
+            else:
+                df_game.at[i, 'Cumulative Wins/Losses'] = 0
+        if row['result'] != 'Tie':
+            non_tie_rounds += 1  # Increment non-tie rounds only
+
+            if last_non_tie is not None:
+                if row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Banker':
+                    df_game.at[i, 'new_column'] = 1
+                elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Player':
+                    df_game.at[i, 'new_column'] = 2
+                elif row['result'] == 'Player' and df_game.at[last_non_tie, 'result'] == 'Player':
+                    df_game.at[i, 'new_column'] = 4
+                elif row['result'] == 'Banker' and df_game.at[last_non_tie, 'result'] == 'Banker':
+                    df_game.at[i, 'new_column'] = 3
+            last_non_tie = i
+
+            # Update counts based on new_column
+            if df_game.at[i, 'new_column'] == 1:
+                count_1 += 1
+            elif df_game.at[i, 'new_column'] == 2:
+                count_2 += 1
+            elif df_game.at[i, 'new_column'] == 3:
+                count_3 += 1
+            elif df_game.at[i, 'new_column'] == 4:
+                count_4 += 1
+
+        # Calculate proportions based on non-tie rounds
+        if non_tie_rounds > 1:
+            df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
+            df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
+
+        prop_1 = df_game.at[i, 'proportion_1']
+        prop_2 = df_game.at[i, 'proportion_2']
+        prop_3 = df_game.at[i, 'proportion_3']
+        prop_4 = df_game.at[i, 'proportion_4']
+        
+        
         result = df_game.at[i, 'result']
         rsi_p3 = df_game.at[i, 'rsi_p3']
         rsi_p4 = df_game.at[i, 'rsi_p4']
@@ -186,6 +254,8 @@ def update_result(winner):
         current_resistance = df_game.at[i, 'resistance']
         cumulative_wins_losses = df_game.at[i, 'Cumulative Wins/Losses']
 
+        
+        
         next_bet = 'No Bet'
 
         # Player bounce strategy
