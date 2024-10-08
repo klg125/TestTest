@@ -39,6 +39,8 @@ def calculate_rsi(series, window=14):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+
+
 # Function to calculate support and resistance
 def calculate_support_resistance(df):
     cumulative_wins_losses = df['Cumulative Wins/Losses'].values
@@ -106,7 +108,7 @@ def data_processing(df_game):
 
 
 # Streamlit app
-st.title("Baccarat Simulator")
+st.title("Baccarat Simulator (BFT + Ok1)")
 
 # Add a game selector (G1, G2, G3, G4, G5, G6)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
@@ -169,7 +171,7 @@ def update_result(winner):
     profit = st.session_state[f'profit_{game}']
     B = st.session_state[f'initial_bankroll_{game}']  # Initial bankroll
     T_B = B * 0.2
-    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 3, 3, 5, 70, 2
+    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.4, 0.6, 4, 60.6, 2.2
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
