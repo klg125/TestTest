@@ -170,9 +170,11 @@ def update_result(winner):
     last_non_tie = None
     previous_decision = None
     profit = st.session_state[f'profit_{game}']
-    B = st.session_state[f'initial_bankroll_{game}']  # Initial bankroll
-    T_B = B * 0.2
-    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.5, 0.5, 4, 60, 2.56
+    B = 5000
+    T_B = B * 0.4
+    base_bet_size = (1/20 * T_B)  # Initial fixed bet size for each round
+    next_bet_size = base_bet_size
+    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.5, 0.6, 4, 60, 2.2
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
@@ -341,40 +343,61 @@ def update_result(winner):
                 elif previous_decision == 'Banker':
                     next_bet = 'Banker'
 
-            
-        # Base bet size
-        base_bet_size = (1 / 40 * T_B)
 
-        # Adjust the bet size based on previous decisions
+     
         if previous_decision == 'Player':
             if result == 'Player':
                 consecutive_losses = 0
                 wins_total += 1
+                  # Double the bet size with each consecutive win, capping at 3 consecutive wins
+                if consecutive_wins == 0:
+                    bet_size = base_bet_size 
+            
+                if consecutive_wins == 1:
+                    bet_size = base_bet_size * multiplier
+                elif consecutive_wins == 2:
+                    bet_size = base_bet_size * (multiplier ** 2)
+                elif consecutive_wins >= 3:
+                    bet_size = base_bet_size *  (multiplier ** 3)
                 consecutive_wins += 1
-                bet_size = base_bet_size * (multiplier ** min(consecutive_wins, 3))
-                B += bet_size
+                B += bet_size  # Win: Update bankroll
+                next_bet_size = bet_size * multiplier
             elif result == 'Banker':
+                B -= next_bet_size  # Loss: Deduct from bankroll
                 consecutive_losses += 1
-                consecutive_wins = 0
-                bet_size = base_bet_size
+                consecutive_wins = 0  # Reset consecutive wins after a loss
                 wins_total -= 1
-                B -= bet_size
+                next_bet_size = base_bet_size
+                bet_size = base_bet_size  # Reset to base bet size after a loss
+            
 
         elif previous_decision == 'Banker':
             if result == 'Banker':
+                
                 consecutive_losses = 0
                 wins_total += 1
+                # Double the bet size with each consecutive win, capping at 3 consecutive wins
+                if consecutive_wins == 0:
+                    bet_size = base_bet_size
+              
+                elif consecutive_wins == 1:
+                    bet_size = base_bet_size * (multiplier ** 1)
+                elif consecutive_wins == 2:
+                    bet_size = base_bet_size *  (multiplier ** 2)
+                elif consecutive_wins >= 3:
+                    bet_size = base_bet_size *  (multiplier ** 3)
                 consecutive_wins += 1
-                bet_size = base_bet_size * (multiplier ** min(consecutive_wins, 3))
-            
-                B += 0.95 * bet_size
-            elif result == 'Player':
-                consecutive_losses += 1
-                consecutive_wins = 0
-                bet_size = base_bet_size
-                wins_total -= 1
-                B -= bet_size
+                B += 0.95 * bet_size  # Banker win returns 0.95 due to commission
+                next_bet_size = bet_size * multiplier
 
+                
+            elif result == 'Player':
+                B -= next_bet_size  # Loss: Deduct from bankroll
+                consecutive_losses += 1
+                consecutive_wins = 0  # Reset consecutive wins after a loss
+                wins_total -= 1
+                next_bet_size = base_bet_size
+                bet_size = base_bet_size  # Reset to base bet size after a loss
         # Stopping conditions for bounce strategy
         if bounce_active and (rsi_p4 <= rsi_p3 and next_bet == 'Player') or cumulative_wins_losses >= current_resistance or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
             bounce_active = False
@@ -406,7 +429,6 @@ def update_result(winner):
     df_game.at[total_rounds - 1, 'profit'] = B
     st.session_state[f'df_game_{game}'] = df_game
     st.session_state[f'profit_{game}'] = B
-    st.session_state[f'initial_bankroll_{game}'] = B
     # Store the updated proportions
     st.session_state[f'proportions_{game}'] = {
         "proportion_1": df_game['proportion_1'].iloc[-1],
