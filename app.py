@@ -99,7 +99,7 @@ def data_processing(df_game):
 
     
     df_game['rsi_p3'] = df_game['proportion_3'].transform(lambda x: calculate_rsi(x, window=10))
-    df_all_games['rsi_p4'] = df_all_games['proportion_4'].transform(lambda x: calculate_rsi(x, window=10))
+    df_game['rsi_p4'] = df_game['proportion_4'].transform(lambda x: calculate_rsi(x, window=10))
 
     df_game = calculate_support_resistance(df_game)
 
