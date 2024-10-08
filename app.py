@@ -171,7 +171,7 @@ def update_result(winner):
     profit = st.session_state[f'profit_{game}']
     B = st.session_state[f'initial_bankroll_{game}']  # Initial bankroll
     T_B = B * 0.2
-    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.4, 0.6, 4, 60.6, 2.2
+    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.4, 0.6, 5, 60, 2
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
