@@ -165,7 +165,7 @@ def update_result(winner):
     last_non_tie = None
     previous_decision = None
     profit = st.session_state[f'profit_{game}']
-    B = st.session_state[f'bankroll_{game}']  # Initial bankroll
+    B = st.session_state[f'initial_bankroll_{game}']  # Initial bankroll
     T_B = B * 0.2
     win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 3, 3, 5, 70, 2
     B_high = B + (win_threshold * T_B)
@@ -311,7 +311,7 @@ def update_result(winner):
         previous_decision = next_bet
 
     # --- 4. Update bankroll and session state ---
-    st.session_state[f'bankroll_{game}'] = B
+    st.session_state[f'initial_bankroll_{game}'] = B
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
     st.session_state[f'df_game_{game}'] = df_game
     st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
