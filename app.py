@@ -434,6 +434,9 @@ def update_result(winner):
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
 
+st.markdown(f"""
+    <h4 style='font-size:18px;'>Game {game}: Who Won Round {st.session_state[f'round_num_{game}']}?</h4>
+""", unsafe_allow_html=True)
 # Buttons for each round (Banker, Player, Tie)
 st.subheader(f"Game {game}: Who Won Round {st.session_state[f'round_num_{game}']}?")
 col1, col2, col3 = st.columns(3)
@@ -463,21 +466,21 @@ if st.button("Reset Game"):
 # Display current betting decisions and profits
 if f'df_game_{game}' in st.session_state:
         
-    # Display cumulative wins and proportions
-    proportions = st.session_state[f'proportions_{game}']
-
-
-    st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
-         f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
-         f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
-         f"**P1:** {proportions['proportion_1']:.2f} | "
-         f"**P2:** {proportions['proportion_2']:.2f} | "
-         f"**P3:** {proportions['proportion_3']:.2f} | "
-         f"**P4:** {proportions['proportion_4']:.2f}")
+  
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
-        st.subheader(f"Betting Decisions and Profits for {game}")
-        
+        st.subheader(f"Betting Decisions and Data for {game}")
+    
+              # Display cumulative wins and proportions
+        proportions = st.session_state[f'proportions_{game}']
+    
+        st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} | "
+             f"**Banker:** {st.session_state[f'cumulative_wins_{game}']['Banker']} | "
+             f"**Tie:** {st.session_state[f'cumulative_wins_{game}']['Tie']} | "
+             f"**P1:** {proportions['proportion_1']:.2f} | "
+             f"**P2:** {proportions['proportion_2']:.2f} | "
+             f"**P3:** {proportions['proportion_3']:.2f} | "
+             f"**P4:** {proportions['proportion_4']:.2f}")
         # Create a dictionary to rename the columns with shorter names
         rename_dict = {
             'round_num': '轮',
