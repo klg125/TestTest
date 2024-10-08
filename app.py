@@ -465,7 +465,25 @@ if f'df_game_{game}' in st.session_state:
     df_game = st.session_state[f'df_game_{game}']
     if len(df_game) > 0:
         st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance', 'Cumulative Wins/Losses', ]].iloc[::-1].reset_index(drop=True))
+        
+        # Create a dictionary to rename the columns with shorter names
+        rename_dict = {
+            'round_num': '轮',
+            'result': '结果',
+            'next_rd_decision': '决策',
+            'profit': 'Bank',
+            'rsi_p3': 'RSIP3',
+            'rsi_p4': 'RSIP4',
+            'support': 'S',
+            'resistance': 'R',
+            'Cumulative Wins/Losses': 'W/L'
+        }
+        
+        # Rename the columns for the display
+        display_df = df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance', 'Cumulative Wins/Losses']].rename(columns=rename_dict)
+        
+        # Display the DataFrame
+        st.write(display_df.iloc[::-1].reset_index(drop=True))
 
 # Display cumulative wins and proportions
 proportions = st.session_state[f'proportions_{game}']
