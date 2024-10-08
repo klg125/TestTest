@@ -108,9 +108,6 @@ def data_processing(df_game):
     return df_game
 
 
-# Streamlit app
-st.title("Baccarat Simulator")
-
 # Add a game selector (G1, G2, G3, G4, G5, G6)
 game = st.selectbox("Select Game", ["G1", "G2", "G3", "G4", "G5", "G6"])
 
@@ -171,10 +168,10 @@ def update_result(winner):
     previous_decision = None
     profit = st.session_state[f'profit_{game}']
     B = 5000
-    T_B = B * 0.4
+    T_B = B * 0.2
     base_bet_size = (1/20 * T_B)  # Initial fixed bet size for each round
     next_bet_size = base_bet_size
-    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.5, 0.6, 4, 60, 2.2
+    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.35, 0.4, 4, 60, 2.2
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
@@ -343,7 +340,6 @@ def update_result(winner):
                 elif previous_decision == 'Banker':
                     next_bet = 'Banker'
 
-
      
         if previous_decision == 'Player':
             if result == 'Player':
@@ -352,7 +348,6 @@ def update_result(winner):
                   # Double the bet size with each consecutive win, capping at 3 consecutive wins
                 if consecutive_wins == 0:
                     bet_size = base_bet_size 
-            
                 if consecutive_wins == 1:
                     bet_size = base_bet_size * multiplier
                 elif consecutive_wins == 2:
@@ -455,6 +450,14 @@ with col3:
     if st.button("Tie"):
         update_result("Tie")
 
+
+# Display current betting decisions and profits
+if f'df_game_{game}' in st.session_state:
+    df_game = st.session_state[f'df_game_{game}']
+    if len(df_game) > 0:
+        st.subheader(f"Betting Decisions and Profits for {game}")
+        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance', 'Cumulative Wins/Losses', ]].iloc[::-1].reset_index(drop=True))
+
 # Display cumulative wins and proportions
 proportions = st.session_state[f'proportions_{game}']
 st.subheader(f"Cumulative Wins and Proportions for {game}")
@@ -465,20 +468,6 @@ st.write(f"**Player:** {st.session_state[f'cumulative_wins_{game}']['Player']} |
          f"**P2:** {proportions['proportion_2']:.2f} | "
          f"**P3:** {proportions['proportion_3']:.2f} | "
          f"**P4:** {proportions['proportion_4']:.2f}")
-
-# Display current betting decisions and profits
-if f'df_game_{game}' in st.session_state:
-    df_game = st.session_state[f'df_game_{game}']
-    if len(df_game) > 0:
-        st.subheader(f"Betting Decisions and Profits for {game}")
-        st.write(df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'proportion_1', 'proportion_2', 'proportion_3', 'proportion_4']].iloc[::-1].reset_index(drop=True))
-
-        # Display RSI, slopes, support, and resistance
-        st.subheader(f"RSI, Slopes, Support, and Resistance for {game}")
-        display_df = df_game[['round_num', 'rsi_p3', 'rsi_p4',
-                                'slope_p3', 'slope_p4',
-                              'support', 'resistance', 'Cumulative Wins/Losses']].copy()
-        st.write(display_df.iloc[::-1].reset_index(drop=True))
 
 # Button to reset the game
 if st.button("Reset Game"):
