@@ -175,6 +175,10 @@ def update_result(winner):
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
+     # Additional parameters for slope-based strategies
+    slope_2_offset = 4
+    multi_factor = 2.56
+
     # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
         df_game['new_column'] = 0
@@ -189,7 +193,6 @@ def update_result(winner):
     # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
 
-    
     count_1 = count_2 = count_3 = count_4 = 0
 
     prev_proportion_1, prev_proportion_2, prev_proportion_3, prev_proportion_4 = 0, 0, 0, 0
@@ -266,8 +269,8 @@ def update_result(winner):
     df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5)
     df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5)
 
-
-    # --- 3. Apply the bounce betting strategy ---
+   
+    # --- 1. Apply Bounce Betting Strategy ---
     for i, row in df_game.iterrows():
         result = df_game.at[i, 'result']
         rsi_p3 = df_game.at[i, 'rsi_p3']
@@ -303,9 +306,31 @@ def update_result(winner):
             elif previous_decision == 'Banker':
                 next_bet = 'Banker'
 
+        # --- 2. Apply Slope-Based Betting Strategy ---
+        if next_bet == 'No Bet':  # Only apply if bounce strategy did not trigger
+            if j >= 20:
+                # Cross Resistance Strategy
+                if df_game['p4_slope'].iloc[j] > 0 and df_game['p3_slope'].iloc[j] < 0 and df_game['p4_slope_5'].iloc[j] > 0 and df_game['p3_slope_5'].iloc[j] < 0:
+                    if rsi_p4 - 5 > rsi_p3:  
+                        cumulative_wins_losses_now = df_game.at[j, 'Cumulative Wins/Losses']
+                        cumulative_wins_losses_ago = df_game.at[j-4, 'Cumulative Wins/Losses']
+
+                        if cumulative_wins_losses_now - current_resistance >= 3 and cumulative_wins_losses_now - cumulative_wins_losses_ago >= 3:
+                            next_bet = 'Player'
+
+                # Cross Support Strategy
+                elif df_game['p3_slope'].iloc[j] > 0 and df_game['p4_slope'].iloc[j] < 0 and df_game['p3_slope_5'].iloc[j] > 0 and df_game['p4_slope_5'].iloc[j] < 0:
+                    if rsi_p3 - 5 > rsi_p4:  # Assuming rsi_diff = 5
+                        cumulative_wins_losses_now = df_game.at[j, 'Cumulative Wins/Losses']
+                        cumulative_wins_losses_ago = df_game.at[j-4, 'Cumulative Wins/Losses']
+
+                        if cumulative_wins_losses_now <= current_support - 3 and cumulative_wins_losses_now - cumulative_wins_losses_ago <= -3:
+                            next_bet = 'Banker'
+
         # Base bet size
         base_bet_size = (1 / 40 * T_B)
 
+        # Adjust the bet size based on previous decisions
         if previous_decision == 'Player':
             if result == 'Player':
                 consecutive_wins += 1
@@ -317,6 +342,7 @@ def update_result(winner):
                 consecutive_losses += 1
                 consecutive_wins = 0
                 bet_size = base_bet_size
+                wins_total -= 1
                 B -= bet_size
 
         elif previous_decision == 'Banker':
@@ -330,19 +356,27 @@ def update_result(winner):
                 consecutive_losses += 1
                 consecutive_wins = 0
                 bet_size = base_bet_size
+                wins_total -= 1
                 B -= bet_size
 
-        # Stopping conditions
+        # Stopping conditions for bounce strategy
         if bounce_active and (rsi_p4 <= rsi_p3 and next_bet == 'Player') or cumulative_wins_losses >= current_resistance or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
             bounce_active = False
 
         if bounce_active and (rsi_p3 <= rsi_p4 and next_bet == 'Banker') or cumulative_wins_losses <= current_support or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
             bounce_active = False
 
+        # Stopping conditions for slope-based strategy
+        if (previous_decision == 'Player' and rsi_p3 >= rsi_p4) or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
+            break
+
+        if (previous_decision == 'Banker' and rsi_p3 <= rsi_p4) or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
+            break
+
         # Store the next round decision and update previous decision
         df_game.at[i, 'next_rd_decision'] = next_bet
         previous_decision = next_bet
-
+        
     # --- 4. Update bankroll and session state ---
     st.session_state[f'initial_bankroll_{game}'] = B
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
