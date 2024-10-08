@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -322,8 +323,6 @@ def update_result(winner):
 
                     if cumulative_wins_losses_now - current_resistance >= 3 and cumulative_wins_losses_now - cumulative_wins_losses_ago >= 3:
                         next_bet = 'Player'
-                        total_bets += 1
-                        player_bets += 1
                         slope_active = True  # Activate slope-based betting
 
             # Cross Support strategy: p3 upward slope, p4 downward slope for at least 2 rounds
@@ -333,8 +332,6 @@ def update_result(winner):
                     cumulative_wins_losses_now = df_game.at[i, 'Cumulative Wins/Losses']
                     if cumulative_wins_losses_now <= current_support - 3 and cumulative_wins_losses_now - cumulative_wins_losses_ago <= -3:
                         next_bet = 'Banker'
-                        total_bets += 1
-                        banker_bets += 1
                         slope_active = True  # Activate slope-based betting
             
             # Continue betting based on slope conditions
