@@ -172,7 +172,7 @@ def update_result(winner):
     profit = st.session_state[f'profit_{game}']
     B = st.session_state[f'initial_bankroll_{game}']  # Initial bankroll
     T_B = B * 0.2
-    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.38, 0.5, 4, 60, 2.56
+    win_threshold, loss_threshold, slope_offset, rsi_max, multiplier = 0.5, 0.5, 4, 60, 2.56
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
@@ -287,7 +287,7 @@ def update_result(winner):
 
         # Player bounce strategy
         if not bounce_active and i >= 20:
-            if (0 <= cumulative_wins_losses - current_support <= 2) and rsi_p4 > rsi_max:
+            if (0 <= cumulative_wins_losses - current_support <= 2):
                 if (df_game['rsi_p4'].iloc[i-1] <= df_game['rsi_p3'].iloc[i-1] or
                     df_game['rsi_p4'].iloc[i-2] <= df_game['rsi_p3'].iloc[i-2] or
                     df_game['rsi_p4'].iloc[i-3] <= df_game['rsi_p3'].iloc[i-3]) and df_game['slope_p4_5'].iloc[i] > 0 and df_game['slope_p3_5'].iloc[i] < 0:
@@ -296,7 +296,7 @@ def update_result(winner):
 
         # Banker bounce strategy
         elif not bounce_active and i >= 20:
-            if (0 <= current_resistance - cumulative_wins_losses <= 2) and rsi_p3 > rsi_max:
+            if (0 <= current_resistance - cumulative_wins_losses <= 2):
                 if (df_game['rsi_p3'].iloc[i-1] <= df_game['rsi_p4'].iloc[i-1] or
                     df_game['rsi_p3'].iloc[i-2] <= df_game['rsi_p4'].iloc[i-2] or
                     df_game['rsi_p3'].iloc[i-3] <= df_game['rsi_p4'].iloc[i-3]) and df_game['slope_p3_5'].iloc[i] > 0 and df_game['slope_p4_5'].iloc[i] < 0:
@@ -348,9 +348,9 @@ def update_result(winner):
         # Adjust the bet size based on previous decisions
         if previous_decision == 'Player':
             if result == 'Player':
-                consecutive_wins += 1
                 consecutive_losses = 0
                 wins_total += 1
+                consecutive_wins += 1
                 bet_size = base_bet_size * (multiplier ** min(consecutive_wins, 3))
                 B += bet_size
             elif result == 'Banker':
@@ -362,10 +362,11 @@ def update_result(winner):
 
         elif previous_decision == 'Banker':
             if result == 'Banker':
-                consecutive_wins += 1
                 consecutive_losses = 0
                 wins_total += 1
+                consecutive_wins += 1
                 bet_size = base_bet_size * (multiplier ** min(consecutive_wins, 3))
+            
                 B += 0.95 * bet_size
             elif result == 'Player':
                 consecutive_losses += 1
@@ -402,9 +403,9 @@ def update_result(winner):
         
     # --- 4. Update bankroll and session state ---
     
-    df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
+    df_game.at[total_rounds - 1, 'profit'] = B
     st.session_state[f'df_game_{game}'] = df_game
-    st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
+    st.session_state[f'profit_{game}'] = B
     st.session_state[f'initial_bankroll_{game}'] = B
     # Store the updated proportions
     st.session_state[f'proportions_{game}'] = {
