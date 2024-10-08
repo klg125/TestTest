@@ -406,14 +406,20 @@ def update_result(winner):
         if slope_active:
             if next_bet == 'Player' and rsi_p3 >= rsi_p4:
                 slope_active = False  # Deactivate slope-based betting
-                next_bet = 'No Bet'
+            
             elif next_bet == 'Banker' and rsi_p3 <= rsi_p4:
                 slope_active = False  # Deactivate slope-based betting
-                next_bet = 'No Bet'
+                
             elif wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
                 slope_active = False  # Stop betting based on other conditions
-                next_bet = 'No Bet'
+           
 
+   
+        if next_bet == 'No Bet': 
+            df_game.at[i, '下注'] = 0
+        else: 
+            df_game.at[i, '下注'] = next_bet_size
+            
 
         # Store the next round decision and update previous decision
         df_game.at[i, 'next_rd_decision'] = next_bet
@@ -499,7 +505,7 @@ if f'df_game_{game}' in st.session_state:
         }
         
         # Rename the columns for the display
-        display_df = df_game[['round_num', 'result', 'next_rd_decision', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance', 'Cumulative Wins/Losses']].rename(columns=rename_dict)
+        display_df = df_game[['round_num', 'result', 'next_rd_decision', '下注', 'profit', 'rsi_p3', 'rsi_p4', 'support', 'resistance', 'Cumulative Wins/Losses']].rename(columns=rename_dict)
         
         # Display the DataFrame
         st.write(display_df.iloc[::-1].reset_index(drop=True))
