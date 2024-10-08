@@ -85,22 +85,26 @@ def calculate_support_resistance(df):
 # Function to calculate slope over 2 rounds
 def calculate_slope(series, offset=2):
     return (series - series.shift(offset)) / offset
-
+    
 def data_processing(df_game):
-    # Apply RSI calculation and round to nearest integer (no decimal points)
-    df_game['rsi_p1'] = calculate_rsi(df_game['proportion_1'], window=10)
-    df_game['rsi_p2'] = calculate_rsi(df_game['proportion_2'], window=10)
-    df_game['rsi_p3'] = calculate_rsi(df_game['proportion_3'], window=10)
-    df_game['rsi_p4'] = calculate_rsi(df_game['proportion_4'], window=10)
+    def calculate_rsi(series, window=14):
+        delta = series.diff()
+        up = delta.clip(lower=0)
+        down = -1 * delta.clip(upper=0)
+        roll_up = up.rolling(window).mean()
+        roll_down = down.rolling(window).mean()
+        rs = roll_up / roll_down
+        rsi = 100 - (100 / (1 + rs))
+        return rsi
 
-    # Apply support and resistance calculation
+    
+    df_game['rsi_p3'] = df_game['proportion_3'].transform(lambda x: calculate_rsi(x, window=10))
+    df_all_games['rsi_p4'] = df_all_games['proportion_4'].transform(lambda x: calculate_rsi(x, window=10))
+
     df_game = calculate_support_resistance(df_game)
 
-    # Calculate slope and round to one decimal point, fill NaN with 0
-    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5)
-    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5)
-
     return df_game
+
 
 
 # Streamlit app
@@ -233,6 +237,10 @@ def update_result(winner):
 
     # --- 2. Apply data_processing (So RSI, slope, etc. are available) ---
     df_game = data_processing(df_game)
+
+    df_game['slope_p3'] = calculate_slope(df_game['proportion_3'], offset=5)
+    df_game['slope_p4'] = calculate_slope(df_game['proportion_4'], offset=5)
+
 
     # --- 3. Apply the bounce betting strategy ---
     for i, row in df_game.iterrows():
