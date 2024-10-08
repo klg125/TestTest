@@ -171,7 +171,7 @@ def update_result(winner):
     B_high = B + (win_threshold * T_B)
     B_low = B - (loss_threshold * T_B)
 
-     # Initialize new columns if not present
+    # Initialize new columns if not present
     if 'new_column' not in df_game.columns:
         df_game['new_column'] = 0
         df_game['proportion_1'] = 0
@@ -182,13 +182,12 @@ def update_result(winner):
         df_game['profit'] = 0
         df_game['Cumulative Wins/Losses'] = 0  # New column for cumulative wins and losses
 
-
     # Track counts for new column
     non_tie_rounds = 0  # This will count non-tie rounds only
-    # Apply the bounce strategy
+
+    # --- 1. Basic Proportion Calculation (Before data_processing) ---
     for i, row in df_game.iterrows():
-        
-          # Calculate cumulative wins and losses based on non-tie rounds
+        # Calculate cumulative wins and losses based on non-tie rounds
         if i > 0:
             if row['result'] == 'Player':
                 df_game.at[i, 'Cumulative Wins/Losses'] = df_game.at[i-1, 'Cumulative Wins/Losses'] + 1
@@ -204,6 +203,7 @@ def update_result(winner):
                 df_game.at[i, 'Cumulative Wins/Losses'] = -1
             else:
                 df_game.at[i, 'Cumulative Wins/Losses'] = 0
+
         if row['result'] != 'Tie':
             non_tie_rounds += 1  # Increment non-tie rounds only
 
@@ -219,28 +219,23 @@ def update_result(winner):
             last_non_tie = i
 
             # Update counts based on new_column
-            if df_game.at[i, 'new_column'] == 1:
-                count_1 += 1
-            elif df_game.at[i, 'new_column'] == 2:
-                count_2 += 1
-            elif df_game.at[i, 'new_column'] == 3:
-                count_3 += 1
-            elif df_game.at[i, 'new_column'] == 4:
-                count_4 += 1
+            count_1 = df_game['new_column'].value_counts().get(1, 0)
+            count_2 = df_game['new_column'].value_counts().get(2, 0)
+            count_3 = df_game['new_column'].value_counts().get(3, 0)
+            count_4 = df_game['new_column'].value_counts().get(4, 0)
 
-        # Calculate proportions based on non-tie rounds
-        if non_tie_rounds > 1:
-            df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
-            df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
+            # Calculate proportions based on non-tie rounds
+            if non_tie_rounds > 1:
+                df_game.at[i, 'proportion_1'] = count_1 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_2'] = count_2 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_3'] = count_3 / (non_tie_rounds - 1)
+                df_game.at[i, 'proportion_4'] = count_4 / (non_tie_rounds - 1)
 
-        prop_1 = df_game.at[i, 'proportion_1']
-        prop_2 = df_game.at[i, 'proportion_2']
-        prop_3 = df_game.at[i, 'proportion_3']
-        prop_4 = df_game.at[i, 'proportion_4']
-        
-        
+    # --- 2. Apply data_processing (So RSI, slope, etc. are available) ---
+    df_game = data_processing(df_game)
+
+    # --- 3. Apply the bounce betting strategy ---
+    for i, row in df_game.iterrows():
         result = df_game.at[i, 'result']
         rsi_p3 = df_game.at[i, 'rsi_p3']
         rsi_p4 = df_game.at[i, 'rsi_p4']
@@ -248,8 +243,6 @@ def update_result(winner):
         current_resistance = df_game.at[i, 'resistance']
         cumulative_wins_losses = df_game.at[i, 'Cumulative Wins/Losses']
 
-        
-        
         next_bet = 'No Bet'
 
         # Player bounce strategy
@@ -277,7 +270,9 @@ def update_result(winner):
             elif previous_decision == 'Banker':
                 next_bet = 'Banker'
 
+        # Base bet size
         base_bet_size = (1 / 40 * T_B)
+
         if previous_decision == 'Player':
             if result == 'Player':
                 consecutive_wins += 1
@@ -314,37 +309,12 @@ def update_result(winner):
         # Store the next round decision and update previous decision
         df_game.at[i, 'next_rd_decision'] = next_bet
         previous_decision = next_bet
-        
-    # Update bankroll and profit
+
+    # --- 4. Update bankroll and session state ---
     st.session_state[f'bankroll_{game}'] = B
     df_game.at[total_rounds - 1, 'profit'] = B - st.session_state[f'initial_bankroll_{game}']
     st.session_state[f'df_game_{game}'] = df_game
     st.session_state[f'profit_{game}'] = B - st.session_state[f'initial_bankroll_{game}']
-
-    # Move to the next round
-      # Process the data to calculate RSI, slopes, support, and resistance
-    df_game['game_number'] = game  # Add game_number column for processing
-    df_game = data_processing(df_game)
-
-    st.session_state[f'round_num_{game}'] += 1
-    # Update the session state with accumulated profit
-    st.session_state[f'profit_{game}'] = profit
-    st.session_state[f'df_game_{game}'] = df_game
-
-    # Store the updated proportions
-    st.session_state[f'proportions_{game}'] = {
-        "proportion_1": df_game['proportion_1'].iloc[-1],
-        "proportion_2": df_game['proportion_2'].iloc[-1],
-        "proportion_3": df_game['proportion_3'].iloc[-1],
-        "proportion_4": df_game['proportion_4'].iloc[-1]
-    }
-
-    # Process the data to calculate RSI, slopes, support, and resistance
-    df_game['game_number'] = game  # Add game_number column for processing
-    df_game = data_processing(df_game)
-
-    # Update the session state with the processed dataframe
-    st.session_state[f'df_game_{game}'] = df_game
 
     # Move to the next round
     st.session_state[f'round_num_{game}'] += 1
