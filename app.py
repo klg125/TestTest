@@ -327,7 +327,6 @@ def update_result(winner):
     df_game = data_processing(df_game)
 
     st.session_state[f'round_num_{game}'] += 1
-
     # Update the session state with accumulated profit
     st.session_state[f'profit_{game}'] = profit
     st.session_state[f'df_game_{game}'] = df_game
