@@ -125,8 +125,8 @@ if f'df_game_{game}' not in st.session_state:
 if f'profit_{game}' not in st.session_state:
     st.session_state[f'profit_{game}'] = 0
 
-if f'bankroll_{game}' not in st.session_state:
-    st.session_state[f'bankroll_{game}'] = 5000
+if f'initial_bankroll_{game}' not in st.session_state:
+    st.session_state[f'initial_bankroll_{game}'] = 5000
 
 # Function to calculate profit based on the previous round's decision and the current result
 def calculate_profit(result, decision, current_profit):
