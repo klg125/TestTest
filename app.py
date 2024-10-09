@@ -355,7 +355,7 @@ def update_result(winner):
                 elif consecutive_wins >= 3:
                     bet_size = base_bet_size *  (multiplier ** 3)
                 consecutive_wins += 1
-                B += bet_size  # Win: Update bankroll
+                B += next_bet_size  # Win: Update bankroll
                 next_bet_size = bet_size * multiplier
             elif result == 'Banker':
                 B -= next_bet_size  # Loss: Deduct from bankroll
@@ -382,9 +382,8 @@ def update_result(winner):
                 elif consecutive_wins >= 3:
                     bet_size = base_bet_size *  (multiplier ** 3)
                 consecutive_wins += 1
-                B += 0.95 * bet_size  # Banker win returns 0.95 due to commission
+                B += 0.95 * next_bet_size  # Banker win returns 0.95 due to commission
                 next_bet_size = bet_size * multiplier
-
                 
             elif result == 'Player':
                 B -= next_bet_size  # Loss: Deduct from bankroll
@@ -394,26 +393,33 @@ def update_result(winner):
                 next_bet_size = base_bet_size
                 bet_size = base_bet_size  # Reset to base bet size after a loss
         # Stopping conditions for bounce strategy
-        if bounce_active and (rsi_p4 <= rsi_p3 and next_bet == 'Player') or cumulative_wins_losses >= current_resistance or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
+        if bounce_active and ((rsi_p4 <= rsi_p3 and next_bet == 'Player') or cumulative_wins_losses >= current_resistance or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low):
             bounce_active = False
             next_bet_size = base_bet_size
+            next_bet == 'No Bet'
 
-        if bounce_active and (rsi_p3 <= rsi_p4 and next_bet == 'Banker') or cumulative_wins_losses <= current_support or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
+        if bounce_active and ((rsi_p3 <= rsi_p4 and next_bet == 'Banker') or cumulative_wins_losses <= current_support or wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low):
             bounce_active = False
             next_bet_size = base_bet_size
+            next_bet == 'No Bet'
 
     
         if slope_active:
             if next_bet == 'Player' and rsi_p3 >= rsi_p4:
                 slope_active = False  # Deactivate slope-based betting
+                next_bet_size = base_bet_size
+                next_bet == 'No Bet'
             
             elif next_bet == 'Banker' and rsi_p3 <= rsi_p4:
                 slope_active = False  # Deactivate slope-based betting
+                next_bet_size = base_bet_size
+                next_bet == 'No Bet'
                 
             elif wins_total >= 3 or consecutive_losses >= 2 or B >= B_high or B <= B_low:
                 slope_active = False  # Stop betting based on other conditions
+                next_bet_size = base_bet_size
+                next_bet == 'No Bet'
            
-
    
         if next_bet == 'No Bet': 
             df_game.at[i, '下注'] = 0
